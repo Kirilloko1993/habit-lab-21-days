@@ -1,1 +1,1651 @@
-[{"title": "Kotlin: привычки в коде", "goal": "Опиши привычку и вычисли её прогресс.", "theory": ["Kotlin выводит тип из значения: val title = \"Читать\" имеет тип String. val запрещает переназначать переменную, var разрешает. Это не делает сам объект неизменяемым.", "Функция объявляется через fun. Параметр записывается name: Type, возвращаемый тип — после скобок. Одно выражение можно записать после знака =.", "data class создаёт equals, hashCode, toString и copy для свойств первичного конструктора. Названия свойств и функций пишем в camelCase, классов — в UpperCamelCase."], "code": "data class Habit(val title: String, val days: Int)\n\nfun points(days: Int): Int = days * 10\n\nfun main() {\n    val habit = Habit(\"Читать\", 3)\n    println(\"${habit.title}: ${points(habit.days)} XP\")\n}", "task": "Напиши функцию points: принимает days: Int, возвращает Int — количество дней, умноженное на 10.", "answers": ["fun points(days: Int): Int = days * 10", "fun points(days: Int) = days * 10", "fun points(days: Int): Int { return days * 10 }"], "hint": "Начни с fun points(days: Int). Для одного выражения подходит =.", "why": "Возвращаемое значение зависит от параметра. Тип Int можно указать явно или вывести. Блочная форма требует return.", "quiz": "Какие утверждения верны?", "options": ["val запрещает переназначение", "var разрешает переназначение", "val делает любой объект неизменяемым", "Тип можно вывести из значения"], "correct": [0, 1, 3], "practice": "В Kotlin Playground создай три привычки. Добавь функцию percent(done: Int, target: Int): Int. Обработай target <= 0 и проверь (3, 10), (0, 10), (10, 10). Не подглядывая, объясни разницу val и var.", "source": "https://kotlinlang.org/docs/kotlin-tour-welcome.html"}, {"title": "Null, коллекции и преобразования", "goal": "Безопасно обработай список привычек.", "theory": ["String не принимает null, String? принимает. ?. выполняет обращение только для ненулевого значения. ?: задаёт запасное значение. !! может привести к NullPointerException.", "listOf создаёт список с интерфейсом только для чтения; mutableListOf позволяет добавлять элементы. map преобразует каждый элемент, filter выбирает элементы, count считает подходящие.", "Лямбда — передаваемая функция. В { it.days > 0 } it обозначает единственный параметр. if и when могут возвращать значение."], "code": "val habits = listOf(Habit(\"Читать\", 3), Habit(\"Бегать\", 0))\nval active = habits.filter { it.days > 0 }\nval names = active.map { it.title }\nval nickname: String? = null\nprintln(nickname?.uppercase() ?: \"Гость\")", "task": "Напиши выражение: из habits получить только привычки с days больше нуля.", "answers": ["habits.filter { it.days > 0 }", "habits.filter { habit -> habit.days > 0 }"], "hint": "Нужен filter, а внутри — логическое условие.", "why": "filter сохраняет сами объекты, map меняет их представление. Именованный параметр и it дают одинаковый результат.", "quiz": "Какие операции безопасны для nickname: String?", "options": ["nickname?.length", "nickname!!.length", "nickname ?: \"Гость\"", "nickname.length"], "correct": [0, 2], "practice": "Напиши totalDays и список названий активных привычек. Проверь пустой список и список, где у всех days = 0. Добавь nullable заметку к Habit и показывай «Нет заметки», если её нет.", "source": "https://kotlinlang.org/docs/kotlin-tour-welcome.html"}, {"title": "Android Views: TextView и события", "goal": "Собери первый экран с XML.", "theory": ["Создай Android-проект Empty Views Activity в Android Studio. Activity — точка входа в экран. setContentView связывает Activity с XML-разметкой.", "TextView показывает текст, EditText принимает ввод, Button запускает действие. Для доступа к View можно использовать View Binding; здесь сначала разбираем findViewById.", "UI обновляется в главном потоке. При повороте Activity может пересоздаться: состояние хранится в ViewModel или SavedStateHandle, а не только в полях Activity."], "code": "// res/layout/activity_main.xml\n<TextView xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:id=\"@+id/title\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"wrap_content\"\n    android:text=\"Мои привычки\" />\n\n// В onCreate после super.onCreate(savedInstanceState)\nsetContentView(R.layout.activity_main)\nval title = findViewById<TextView>(R.id.title)\ntitle.text = \"Сегодня: 3 привычки\"", "task": "Переменная title имеет тип TextView. Напиши строку, которая устанавливает текст «Готово».", "answers": ["title.text = \"Готово\"", "title.setText(\"Готово\")"], "hint": "У TextView есть свойство text и метод setText.", "why": "Kotlin позволяет обращаться к Java getter/setter как к свойствам. Оба варианта изменяют видимый текст.", "quiz": "Какие утверждения верны?", "options": ["TextView выводит текст", "Долгую сеть можно выполнить прямо в onCreate", "Activity может пересоздаться", "Кнопка обрабатывает действие через слушатель"], "correct": [0, 2, 3], "practice": "Добавь EditText и Button в LinearLayout. По нажатию показывай введённое название в TextView. Пустой ввод должен показывать ошибку. Вынеси строки в strings.xml. Запусти на эмуляторе и проверь поворот экрана.", "source": "https://developer.android.com/courses/android-basics-compose/course"}, {"title": "RecyclerView: список и ViewHolder", "goal": "Сделай прокручиваемый список привычек.", "theory": ["RecyclerView повторно использует представления элементов. Adapter создаёт ViewHolder и связывает его с данными. ViewHolder хранит ссылки на View строки.", "onCreateViewHolder создаёт строку, onBindViewHolder заполняет её, getItemCount возвращает размер. LayoutManager задаёт расположение.", "Для обновляемых списков используй ListAdapter с DiffUtil. areItemsTheSame сравнивает устойчивый id, areContentsTheSame — содержимое. Это позволяет обновлять только изменившиеся строки."], "code": "// После подключения зависимости androidx.recyclerview\nval recycler = findViewById<RecyclerView>(R.id.habits)\nrecycler.layoutManager = LinearLayoutManager(this)\nrecycler.adapter = adapter\n\n// В адаптере:\noverride fun getItemCount(): Int = items.size\n\noverride fun onBindViewHolder(holder: HabitHolder, position: Int) {\n    holder.title.text = items[position].title\n}", "task": "В адаптере есть items: List<Habit>. Напиши getItemCount, возвращающий размер списка.", "answers": ["override fun getItemCount(): Int = items.size", "override fun getItemCount() = items.size", "override fun getItemCount(): Int { return items.size }"], "hint": "Переопредели функцию с override. Размер списка — свойство size.", "why": "RecyclerView запрашивает число строк у адаптера. Здесь нужна длина данных, а не фиксированное число.", "quiz": "Что относится к RecyclerView?", "options": ["ViewHolder хранит View строки", "LayoutManager задаёт расположение", "Каждое обновление требует нового Activity", "DiffUtil сравнивает элементы"], "correct": [0, 1, 3], "practice": "Создай row_habit.xml с названием и счётчиком. Реализуй HabitHolder и Adapter с тремя методами. Покажи 30 привычек. Добавь обработчик нажатия через callback. Затем замени Adapter на ListAdapter и проверь обновление одной строки.", "source": "https://developer.android.com/develop/ui/views/layout/recyclerview"}, {"title": "Compose: UI как функция состояния", "goal": "Перенеси список на Jetpack Compose.", "theory": ["Создай Empty Activity с Compose. @Composable помечает функции интерфейса. Text — текст, Button — действие, LazyColumn — ленивый вертикальный список.", "Compose перерисовывает части интерфейса при изменении наблюдаемого состояния. remember хранит значение между рекомпозициями, rememberSaveable — также при типичных пересозданиях.", "Поднимай состояние вверх: экран получает данные и callback, а ViewModel хранит бизнес-состояние. Не запускай HTTP-запрос просто в теле composable — оно может вызываться повторно."], "code": "@Composable\nfun Counter() {\n    var count by rememberSaveable { mutableStateOf(0) }\n    Column {\n        Text(\"Выполнено: $count\")\n        Button(onClick = { count++ }) {\n            Text(\"Отметить\")\n        }\n    }\n}\n// Нужны imports для getValue и setValue\n// androidx.compose.runtime.getValue / setValue", "task": "Напиши composable-функцию HabitTitle с параметром title: String, показывающую Text(title).", "answers": ["@Composable fun HabitTitle(title: String) { Text(title) }", "@Composable fun HabitTitle(title: String) = Text(title)"], "hint": "Пометь функцию @Composable и вызови Text внутри.", "why": "Компонент зависит от входного title. Его можно переиспользовать и проверять в Preview.", "quiz": "Какие решения правильные?", "options": ["Список показывать через LazyColumn", "Сетевой запрос вызывать при каждой рекомпозиции", "Состояние экрана держать в ViewModel", "Для UI использовать @Composable"], "correct": [0, 2, 3], "practice": "Собери экран с LazyColumn, строкой HabitRow и FloatingActionButton. Добавь диалог создания привычки и проверку пустого названия. Используй key = { it.id }. Проверь список на маленьком экране и с крупным шрифтом.", "source": "https://developer.android.com/courses/pathways/compose"}, {"title": "Корутины: синхронно и асинхронно", "goal": "Загружай данные, не блокируя интерфейс.", "theory": ["Синхронная операция завершается до следующей строки. Асинхронная позволяет вызывающему коду продолжить работу. suspend означает возможность приостановки корутины, а не автоматический фоновый поток.", "viewModelScope.launch запускает корутину, отменяемую при очистке ViewModel. Для блокирующего ввода-вывода используй withContext(Dispatchers.IO). Suspend-методы Retrofit обычно сами выполняют сетевую работу вне главного потока.", "Обрабатывай Loading, Success и Error. Не поглощай CancellationException. async нужен для результата Deferred, await ожидает его. Не используй GlobalScope для обычных экранных задач."], "code": "fun load() = viewModelScope.launch {\n    state.value = UiState.Loading\n    try {\n        state.value = UiState.Success(repository.load())\n    } catch (e: CancellationException) {\n        throw e\n    } catch (e: Exception) {\n        state.value = UiState.Error(\"Не удалось загрузить\")\n    }\n}\n\nsuspend fun readFile(): String =\n    withContext(Dispatchers.IO) { file.readText() }", "task": "Напиши вызов, который выполняет file.readText() в Dispatchers.IO через withContext.", "answers": ["withContext(Dispatchers.IO) { file.readText() }"], "hint": "withContext принимает контекст и блок кода.", "why": "Блокирующее чтение файла не должно занимать главный поток. Приостановка позволяет UI продолжать обрабатывать события.", "quiz": "Какие утверждения верны?", "options": ["suspend всегда создаёт фоновый поток", "viewModelScope связан с жизнью ViewModel", "CancellationException нужно распространять", "Для блокирующего IO подходит Dispatchers.IO"], "correct": [1, 2, 3], "practice": "В репозитории задержи результат через delay(1500). Покажи индикатор загрузки, ошибку и кнопку повтора. Во время ожидания счётчик на экране должен оставаться отзывчивым. Сравни с блокирующим Thread.sleep в отдельном учебном примере; не оставляй его в UI.", "source": "https://developer.android.com/kotlin/coroutines"}, {"title": "Android-проект: CRUD и API-клиент", "goal": "Собери полный пользовательский сценарий.", "theory": ["Раздели приложение на UI → ViewModel → Repository → API. DTO описывает сетевой формат, модель UI — удобное для экрана представление. id нужен для обновления и удаления конкретной привычки.", "Используй Retrofit с JSON-конвертером и suspend-методами. Добавь разрешение INTERNET. Адрес 10.0.2.2 в стандартном Android-эмуляторе ведёт к localhost компьютера; localhost внутри эмулятора — сам эмулятор.", "Для локальной разработки HTTP требует явной настройки network security только для отладки. Для реального сервера используй HTTPS. Ключи и пароли не храни в приложении. API заработает на третьей неделе; до этого используй FakeRepository."], "code": "interface HabitApi {\n    @GET(\"api/habits\")\n    suspend fun list(): List<HabitDto>\n\n    @POST(\"api/habits\")\n    suspend fun create(@Body body: HabitRequest): HabitDto\n\n    @DELETE(\"api/habits/{id}\")\n    suspend fun delete(@Path(\"id\") id: Long)\n}\n\ndata class HabitRequest(val title: String)\ndata class HabitDto(val id: Long, val title: String, val done: Boolean)", "task": "Какой HTTP-метод нужен для получения списка без изменения данных? Введи название метода.", "answers": ["GET"], "hint": "Это метод чтения ресурса.", "why": "GET читает данные. POST обычно создаёт ресурс, PUT заменяет или обновляет, DELETE удаляет.", "quiz": "Что должно быть в готовом приложении?", "options": ["Обработка пустого списка", "Пароль базы данных в APK", "Экран ошибки и повтор", "Отмена задач при уходе с экрана"], "correct": [0, 2, 3], "practice": "Сделай список, создание, редактирование названия, отметку done и удаление. Реализуй FakeRepository, затем HabitApi с GET/POST/PUT/DELETE. На каждую операцию показывай результат или ошибку. Сохраняй форму при повороте. Попроси другого человека создать и удалить привычку без объяснений.", "source": "https://developer.android.com/topic/architecture"}, {"title": "Java после Kotlin", "goal": "Перепиши модель и функцию на Java.", "theory": ["Java и Kotlin на JVM могут работать вместе. В Java тип обычно стоит перед именем; строки заканчиваются точкой с запятой. Методы входят в классы.", "Для простых неизменяемых DTO подходит record. Обычный class позволяет управлять состоянием и поведением; private закрывает поле от внешнего доступа.", "Поставь JDK 21 для учебного проекта. Начни с jshell или IntelliJ IDEA. java -version проверяет установленный JDK. Не путай Java с JavaScript."], "code": "public record Habit(long id, String title, boolean done) {}\n\npublic class Points {\n    public static int points(int days) {\n        return days * 10;\n    }\n}", "task": "Напиши метод public static int points(int days), возвращающий days * 10.", "answers": ["public static int points(int days) { return days * 10; }"], "hint": "В Java тип возвращаемого значения идёт перед именем метода.", "why": "static позволяет вызывать метод без экземпляра Points. return завершает метод и возвращает результат.", "quiz": "Какие утверждения верны?", "options": ["Java и Kotlin могут работать на JVM", "В Java тип пишется перед именем параметра", "record подходит для DTO", "Java — другое имя JavaScript"], "correct": [0, 1, 2], "practice": "Создай Habit.java и Points.java. Напиши main, который создаёт три Habit и выводит их. Перенеси функцию percent с первой недели и сравни поведение на одинаковых входных данных.", "source": "https://dev.java/learn/"}, {"title": "ООП: инкапсуляция и интерфейсы", "goal": "Опиши контракт хранилища привычек.", "theory": ["Интерфейс описывает доступные операции. Реализация решает, как их выполнять. Код сервиса зависит от интерфейса, поэтому fake-хранилище можно заменить базой.", "Инкапсуляция помогает защищать инварианты: например, название не бывает пустым. Конструктор принимает обязательные зависимости. Предпочитай композицию наследованию, когда нужна замена поведения.", "Не делай все поля public. Не возвращай изменяемые внутренние коллекции без необходимости. Разделяй DTO, сущность базы и объект бизнес-логики."], "code": "public interface HabitStore {\n    List<Habit> findAll();\n    Habit save(Habit habit);\n}\n\npublic final class HabitService {\n    private final HabitStore store;\n    public HabitService(HabitStore store) {\n        this.store = store;\n    }\n}", "task": "В конструкторе параметр store. Напиши присваивание полю с тем же именем.", "answers": ["this.store = store;"], "hint": "Для обращения к полю экземпляра используй this.", "why": "Без this оба имени обозначали бы параметр. Присваивание сохраняет зависимость в объекте.", "quiz": "Какие решения помогают заменять хранилище?", "options": ["Зависеть от HabitStore", "Везде создавать конкретную БД через new", "Передавать зависимость в конструктор", "Использовать fake-реализацию в тесте"], "correct": [0, 2, 3], "practice": "Напиши InMemoryHabitStore. Передай его в HabitService. Добавь create(title), запрети пустое название. Затем создай LoggingHabitStore, который оборачивает другое хранилище и пишет операции в консоль.", "source": "https://dev.java/learn/"}, {"title": "Коллекции и generics", "goal": "Фильтруй данные для админки.", "theory": ["List сохраняет порядок и допускает повторения; Set хранит уникальные элементы; Map связывает ключ и значение. Generics задают тип элементов: List<Habit>.", "ArrayList изменяемый, List.of создаёт неизменяемый список. stream строит цепочку обработки. filter выбирает, map преобразует, toList собирает результат.", "Для небольшой бизнес-операции обычный цикл может быть яснее сложного stream. Не меняй исходную коллекцию во время обхода без безопасного механизма."], "code": "List<Habit> habits = List.of(\n    new Habit(1L, \"Читать\", true),\n    new Habit(2L, \"Бегать\", false)\n);\nList<String> titles = habits.stream()\n    .filter(Habit::done)\n    .map(Habit::title)\n    .toList();", "task": "Введи тип коллекции Java для соответствия id → Habit (ключ типа Long).", "answers": ["Map<Long, Habit>", "java.util.Map<Long, Habit>"], "hint": "Нужны пары ключ-значение и два параметра типа.", "why": "Map позволяет найти объект по ключу. Тип ключа здесь Long, а значения — Habit.", "quiz": "Какие утверждения верны?", "options": ["Set подходит для уникальных тегов", "Map хранит пары ключ-значение", "List.of можно свободно расширять через add", "filter отбирает элементы"], "correct": [0, 1, 3], "practice": "Напиши поиск по части названия без учёта регистра, подсчёт done и Map по id. Проверь пустой список и повторяющиеся названия. Сравни stream и цикл по читаемости.", "source": "https://dev.java/learn/"}, {"title": "Ошибки и проверки", "goal": "Отдели неправильный ввод от сбоя программы.", "theory": ["Исключение прерывает обычное выполнение. try/catch нужен там, где можно восстановиться или преобразовать ошибку в понятный ответ. Не скрывай ошибку пустым catch.", "IllegalArgumentException подходит для недопустимого аргумента. На границе API позже используем Bean Validation и HTTP 400. Ошибка отсутствующего id станет HTTP 404.", "Проверяй обычные случаи, границы и неверные входы. Для unit-теста JUnit использует @Test, assertEquals и assertThrows. Не тестируй только успешный пример."], "code": "public String normalize(String title) {\n    if (title == null || title.isBlank()) {\n        throw new IllegalArgumentException(\"Название пустое\");\n    }\n    return title.trim();\n}\n\n@Test\nvoid rejectsBlankTitle() {\n    assertThrows(IllegalArgumentException.class,\n        () -> service.create(\" \"));\n}", "task": "Какой метод String проверяет, что строка пустая или состоит из пробелов? Введи имя без скобок.", "answers": ["isBlank"], "hint": "isEmpty проверяет только длину; нужен метод, учитывающий пробелы.", "why": "isBlank вернёт true для \"\", \" \" и строки с табуляцией. До вызова проверь null.", "quiz": "Какие случаи нужно проверить?", "options": ["Пустое название", "Название из пробелов", "Обычное название", "Только заранее известный счастливый путь"], "correct": [0, 1, 2], "practice": "Добавь JUnit в Maven-проект. Напиши тесты create, rename и delete. Убедись, что пустое название отвергается, а удаление неизвестного id сообщает об ошибке. Сначала сломай проверку и посмотри, падает ли тест.", "source": "https://dev.java/learn/"}, {"title": "Админка: страницы и формы", "goal": "Спроектируй интерфейс управления.", "theory": ["Java-код обслуживает веб-страницы, а браузер рисует HTML/CSS. Thymeleaf подставляет данные в серверные шаблоны. Это админка на Java с HTML-интерфейсом.", "GET /admin/habits отображает список. POST из формы создаёт привычку. После изменения перенаправляй пользователя на список — Post/Redirect/Get предотвращает повторную отправку при обновлении.", "На этой неделе подготовь шаблоны; запуск вместе с контроллерами будет на неделе Spring. Админка и Android должны использовать один HabitService и одну базу, а не отдельные наборы данных."], "code": "<!-- templates/habits.html -->\n<ul>\n  <li th:each=\"habit : ${habits}\" th:text=\"${habit.title}\">Название</li>\n</ul>\n<form th:action=\"@{/admin/habits}\" method=\"post\">\n  <label>Название <input name=\"title\" required maxlength=\"80\"></label>\n  <button type=\"submit\">Добавить</button>\n</form>", "task": "Какой HTTP-метод должна использовать форма создания привычки?", "answers": ["POST"], "hint": "Создание меняет данные и не должно выполняться через чтение.", "why": "POST отправляет новую команду. После сохранения контроллер возвращает redirect на GET страницы.", "quiz": "Что правильно для админки?", "options": ["Использовать общее хранилище с приложением", "После POST делать redirect", "Удалять данные через GET-ссылку", "Экранировать пользовательский текст"], "correct": [0, 1, 3], "practice": "Подготовь habits.html: таблица id/title/done, форма создания, кнопки удаления и редактирования. Используй th:text для текста. Предусмотри сообщение об ошибке. Пока открой статический макет в браузере; динамика появится на Spring-неделе.", "source": "https://spring.io/guides/gs/serving-web-content/"}, {"title": "Java-проект: слои и сборка", "goal": "Подготовь сервис для будущего API.", "theory": ["Раздели код по ответственности: domain, service, repository и web. Сервис отвечает за правила, repository — за хранение, controller — за транспорт.", "Maven описывает зависимости и сборку в pom.xml. Wrapper ./mvnw делает запуск воспроизводимым. Не коммить пароли, build output и локальные настройки IDE.", "Операция обновления должна явно обрабатывать отсутствующий id. Используй Optional для возможного отсутствия результата, но не как универсальную замену всем полям."], "code": "public Habit requireHabit(long id) {\n    return store.findById(id)\n        .orElseThrow(() -> new IllegalArgumentException(\"Не найдено\"));\n}\n\n// Контракт repository\nOptional<Habit> findById(long id);", "task": "Допиши имя метода Optional, который возвращает значение или выбрасывает исключение от supplier.", "answers": ["orElseThrow"], "hint": "Название начинается с orElse и говорит о выбрасывании ошибки.", "why": "orElseThrow задаёт поведение для отсутствующего значения и избавляет от неявного null.", "quiz": "Кто отвечает за бизнес-правила?", "options": ["Service", "HTML-шаблон", "Repository для всех правил", "Controller для всех правил"], "correct": [0], "practice": "Собери Maven-проект с CRUD-сервисом и InMemoryHabitStore. Все операции должны работать без веб-сервера. Напиши README с командами запуска и тестов. Проверь, что тесты проходят через ./mvnw test.", "source": "https://dev.java/learn/"}, {"title": "Java-босс: законченная админка", "goal": "Проверь готовность Java-части.", "theory": ["Сегодня не добавляем новые конструкции: соединяем модель, хранилище, сервис, проверки и шаблоны. Цель — самостоятельный код без копирования каждой строки.", "Контракт общего API: GET/POST /api/habits; PUT/DELETE /api/habits/{id}. DTO: id, title, done. title — 1–80 символов после нормализации. id выдаёт сервер.", "Прогони сценарии: создать, переименовать, отметить, удалить; проверить неизвестный id и пустое название. Веб-запуск админки подключим после Spring Initializr."], "code": "public record HabitRequest(String title, boolean done) {}\npublic record HabitResponse(long id, String title, boolean done) {}\n\n// Общий сервис для обоих интерфейсов\nHabitResponse create(HabitRequest request);\nHabitResponse update(long id, HabitRequest request);\nvoid delete(long id);", "task": "Кто должен генерировать устойчивый id новой привычки в нашей архитектуре?", "answers": ["сервер", "server", "backend", "бэкенд"], "hint": "Все клиенты должны видеть один и тот же идентификатор.", "why": "Сервер централизованно хранит данные и выдаёт id. Клиенты передают id для дальнейших операций.", "quiz": "Какие условия показывают готовность?", "options": ["CRUD работает через сервис", "Тесты неверного ввода проходят", "Android и админка имеют разные схемы данных", "Контракт DTO согласован"], "correct": [0, 1, 3], "practice": "За 45 минут без готового образца напиши метод update и 3 теста: успех, пустое название, неизвестный id. Проверь шаблон формы редактирования. Запиши вслух, как запрос пройдёт через controller/service/repository.", "source": "https://dev.java/learn/"}, {"title": "Spring Boot: первый сервер", "goal": "Запусти API и админку в одном проекте.", "theory": ["На start.spring.io выбери Maven, Java, стабильную версию Spring Boot и JDK 21, если он доступен в списке совместимых. Добавь Spring Web, Thymeleaf, Validation, Spring Data JPA, H2 и Spring Security.", "@SpringBootApplication включает конфигурацию и поиск компонентов. Главный класс размести в корневом пакете, например com.example.habits, а остальные — в его подпакетах.", "Spring создаёт bean-компоненты и передаёт зависимости. Используй конструктор. Запусти ./mvnw spring-boot:run. С Security по умолчанию запросы могут требовать входа: на шестой день явно настроим доступ."], "code": "@SpringBootApplication\npublic class HabitsApplication {\n    public static void main(String[] args) {\n        SpringApplication.run(HabitsApplication.class, args);\n    }\n}\n\n@Service\npublic class HabitService {\n    private final HabitRepository repository;\n    public HabitService(HabitRepository repository) {\n        this.repository = repository;\n    }\n}", "task": "Какой аннотацией помечаем класс бизнес-сервиса для регистрации в Spring?", "answers": ["@Service", "Service"], "hint": "Название соответствует роли сервисного слоя.", "why": "@Service — специализация компонента. Spring обнаруживает его в сканируемом пакете.", "quiz": "Какие зависимости нужны нашему проекту?", "options": ["Spring Web", "Thymeleaf", "Spring Data JPA", "Ничего: Java сама реализует Spring"], "correct": [0, 1, 2], "practice": "Сгенерируй проект и запусти. Перенеси Java-сервис. Добавь GET /api/health с ответом {\"status\":\"ok\"}. Если появляется 401, проверь настройки Security и вход; не отключай защиту без понимания.", "source": "https://spring.io/guides/gs/spring-boot/"}, {"title": "REST: контракт и контроллеры", "goal": "Реализуй HTTP-операции привычек.", "theory": ["@RestController возвращает данные ответа, обычно JSON. @Controller с Thymeleaf возвращает имя HTML-шаблона. Это два входа в общий сервис.", "@GetMapping читает, @PostMapping создаёт, @PutMapping обновляет, @DeleteMapping удаляет. @PathVariable связывает id из пути, @RequestBody десериализует JSON.", "Создание возвращает 201, успешное удаление — 204, неверный ввод — 400, отсутствующий ресурс — 404. В контроллере не размещай SQL и бизнес-правила."], "code": "@RestController\n@RequestMapping(\"/api/habits\")\npublic class HabitController {\n    private final HabitService service;\n    public HabitController(HabitService service) { this.service = service; }\n\n    @GetMapping\n    public List<HabitResponse> list() { return service.list(); }\n\n    @PostMapping\n    @ResponseStatus(HttpStatus.CREATED)\n    public HabitResponse create(@Valid @RequestBody HabitRequest request) {\n        return service.create(request);\n    }\n}", "task": "Напиши аннотацию для DELETE по адресу /{id} внутри контроллера.", "answers": ["@DeleteMapping(\"/{id}\")"], "hint": "Используй DeleteMapping с шаблоном пути.", "why": "Аннотация выбирает метод HTTP и маршрут. Сам id затем принимается через @PathVariable.", "quiz": "Какие коды соответствуют ситуации?", "options": ["201 — ресурс создан", "404 — ресурс не найден", "400 — неверные данные", "500 — любое пустое название"], "correct": [0, 1, 2], "practice": "Реализуй четыре маршрута. Через curl или HTTP-клиент создай привычку, получи список, измени done, удали. Сохрани запросы в README. PUT неизвестного id должен дать 404, а не случайно создать объект.", "source": "https://spring.io/guides/gs/rest-service/"}, {"title": "JPA: база и репозиторий", "goal": "Сохраняй привычки между перезапусками.", "theory": ["@Entity описывает сущность базы. @Id отмечает ключ, @GeneratedValue делегирует генерацию id. JPA-сущности нужен конструктор без аргументов; record не используй как обычную JPA-сущность.", "JpaRepository предоставляет findAll, findById, save и delete. Long соответствует типу ключа. DTO отделяет публичный API от схемы базы.", "Для учебного сохранения используй файловую H2: spring.datasource.url=jdbc:h2:file:./data/habits. update допустим в учебной среде; в рабочем проекте применяй миграции Flyway/Liquibase."], "code": "@Entity\npublic class HabitEntity {\n    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n    private String title;\n    private boolean done;\n    protected HabitEntity() {}\n    // Добавь конструктор, getters и методы изменения\n}\n\npublic interface HabitRepository\n    extends JpaRepository<HabitEntity, Long> {}", "task": "Напиши объявление интерфейса HabitRepository для HabitEntity с ключом Long.", "answers": ["public interface HabitRepository extends JpaRepository<HabitEntity, Long> {}"], "hint": "Интерфейс extends JpaRepository с двумя типами.", "why": "Spring Data создаёт реализацию во время запуска. Типы описывают сущность и ключ.", "quiz": "Что верно для JPA?", "options": ["Сущности нужен id", "DTO обязательно должен быть сущностью", "Файловая H2 сохраняет данные на диске", "Репозиторий может вернуть Optional"], "correct": [0, 2, 3], "practice": "Подключи H2 в файл. Создай привычку, останови сервер и запусти снова: запись должна остаться. Перенеси update в @Transactional метод. Убедись, что Android и админка видят те же id.", "source": "https://spring.io/guides/gs/accessing-data-jpa/"}, {"title": "Валидация и ошибки API", "goal": "Сделай ошибки предсказуемыми для клиента.", "theory": ["Bean Validation проверяет DTO: @NotBlank запрещает пустое значение, @Size(max = 80) ограничивает длину. @Valid включает проверку входного аргумента контроллера.", "@RestControllerAdvice обрабатывает исключения централизованно. Не отправляй stack trace и пароли клиенту. Для ошибок используй понятный JSON со стабильным кодом и сообщением.", "В Android разделяй ошибки сети, неверного ввода и сервера. Повтор POST после сетевого таймаута может создать дубликат: для реальной системы нужен продуманный механизм идемпотентности."], "code": "public record HabitRequest(\n    @NotBlank @Size(max = 80) String title,\n    boolean done\n) {}\n\n@RestControllerAdvice\nclass ApiErrors {\n    @ExceptionHandler(HabitNotFoundException.class)\n    ResponseEntity<Map<String, String>> missing() {\n        return ResponseEntity.status(404)\n            .body(Map.of(\"code\", \"NOT_FOUND\", \"message\", \"Привычка не найдена\"));\n    }\n}", "task": "Какая аннотация запрещает null, пустую строку и строку из пробелов?", "answers": ["@NotBlank", "NotBlank"], "hint": "Аннотация содержит слово Blank.", "why": "@NotNull запрещает только null. @NotEmpty также запрещает пустую строку, но пробелы проверяет @NotBlank.", "quiz": "Что верно?", "options": ["@Valid включает проверку DTO", "Stack trace нужно отправлять каждому пользователю", "404 подходит для неизвестного id", "Ошибки должны иметь понятный формат"], "correct": [0, 2, 3], "practice": "Отправь title=null, пустую строку, пробелы и 81 символ. Все должны дать 400. В Android покажи сообщение рядом с полем. Добавь обработку 404 при удалении уже удалённой записи.", "source": "https://spring.io/guides/"}, {"title": "Админка на Java + Thymeleaf", "goal": "Подключи серверные формы к общему сервису.", "theory": ["@Controller возвращает имя шаблона. Model переносит данные в HTML. @RequestParam получает поле формы. Для списка положи habits в Model и верни \"habits\".", "Thymeleaf th:text экранирует пользовательский текст. Формы изменений используют POST; для удаления в админке можно сделать POST /admin/habits/{id}/delete.", "Сервис остаётся общим для API и админки. Если действие выполнено в браузере, приложение получит результат при следующей загрузке. Это синхронизация через сервер, а не автоматически real-time."], "code": "@Controller\n@RequestMapping(\"/admin/habits\")\nclass AdminController {\n    private final HabitService service;\n    AdminController(HabitService service) { this.service = service; }\n\n    @GetMapping\n    String list(Model model) {\n        model.addAttribute(\"habits\", service.list());\n        return \"habits\";\n    }\n\n    @PostMapping\n    String create(@RequestParam String title) {\n        service.create(new HabitRequest(title, false));\n        return \"redirect:/admin/habits\";\n    }\n}", "task": "Какую строку вернёт контроллер после создания, чтобы перенаправить на /admin/habits? Введи Java return.", "answers": ["return \"redirect:/admin/habits\";"], "hint": "Перед адресом добавь redirect:.", "why": "Браузер делает новый GET после POST. Обновление страницы не отправит создание повторно.", "quiz": "Какие решения подходят?", "options": ["Общий HabitService", "th:text для названия", "Отдельная база для админки", "POST для удаления через форму"], "correct": [0, 1, 3], "practice": "Подключи шаблоны второй недели. Реализуй создание, редактирование, отметку done и удаление. После каждой операции сделай redirect. Добавь отображение ошибок формы и сохрани введённое значение при ошибке.", "source": "https://spring.io/guides/gs/serving-web-content/"}, {"title": "Безопасность и тесты интеграции", "goal": "Защити админку и проверь API.", "theory": ["Админка должна требовать роль ADMIN. Для учебного API можно настроить Basic Auth по HTTPS; на реальном мобильном приложении обычно нужен отдельный поток авторизации и токены. Не вшивай административный пароль в APK.", "Для браузерных форм оставь CSRF-защиту. Если API использует отдельную stateless-авторизацию без cookie, правила CSRF настраиваются отдельно для /api/**. Не отключай защиту глобально ради одной формы.", "@SpringBootTest проверяет контекст приложения, MockMvc — HTTP-поведение. Тестируй успешные и запрещённые операции, 400 и 404. Учебный сертификат не заменяет эти проверки."], "code": "// Фрагмент правил SecurityFilterChain\nhttp.authorizeHttpRequests(auth -> auth\n    .requestMatchers(\"/admin/**\").hasRole(\"ADMIN\")\n    .requestMatchers(\"/api/health\").permitAll()\n    .anyRequest().authenticated()\n);\n// Добавь formLogin и отдельную стратегию API-авторизации.\n// Пароли храни как хэши, секреты — вне исходников.", "task": "Какая роль должна давать доступ к /admin/** в нашем учебном проекте?", "answers": ["ADMIN", "ROLE_ADMIN"], "hint": "Роль администратора. hasRole автоматически добавляет ROLE_.", "why": "Админка меняет общие данные, поэтому её доступ должен быть ограничен.", "quiz": "Какие утверждения верны?", "options": ["CSRF важен для форм с cookie-авторизацией", "Пароль администратора можно включить в APK", "401 и 403 нужно проверить", "Секреты хранятся вне репозитория"], "correct": [0, 2, 3], "practice": "Настрой администратора через внешнюю конфигурацию. Проверь вход, отказ без роли и работу CSRF в формах. Добавь MockMvc-тесты списка, создания, неверного ввода и неизвестного id. Убедись, что Android использует отдельные пользовательские права.", "source": "https://spring.io/guides/gs/securing-web/"}, {"title": "Финальный босс: один продукт", "goal": "Соедини Android, API и админку.", "theory": ["Финальный поток: Compose/View экран → ViewModel → Repository → Retrofit → REST Controller → Service → JPA → база. Админка входит через свой Java Controller в тот же Service.", "Проверь сценарии в обе стороны: создание в Android видно в админке; переименование в админке видно после обновления списка в Android. Добавь состояние loading/error/empty и защиту от двойного нажатия.", "Неделя не делает профессионалом. Уверенность растёт, когда можешь повторить проект самостоятельно, объяснить решение и исправить ошибку. Сертификат центра — игровой знак прохождения, не аккредитованный документ."], "code": "// Единый формат ответа\n{ \"id\": 42, \"title\": \"Читать 20 минут\", \"done\": false }\n\n// Контракт\nGET    /api/habits\nPOST   /api/habits\nPUT    /api/habits/{id}\nDELETE /api/habits/{id}\n\n// Android debug baseUrl для стандартного эмулятора:\n// http://10.0.2.2:8080/", "task": "Введи HTTP-код успешного удаления без тела ответа.", "answers": ["204"], "hint": "Код из семейства 2xx: No Content.", "why": "204 сообщает об успехе без тела. Клиент не должен пытаться десериализовать JSON из пустого ответа.", "quiz": "Что обязательно проверить перед финалом?", "options": ["Создание в Android видно в админке", "Изменение админки видно после обновления Android", "Приложение отвечает при загрузке", "Любой пользователь имеет права администратора"], "correct": [0, 1, 2], "practice": "С нуля создай привычку в Android, переименуй в админке, обнови список и удали в Android. Перезапусти сервер и проверь сохранение. Отключи сеть: приложение не должно зависнуть. Покажи проект другу, исправь одну найденную проблему и запиши короткое демо. Затем самостоятельно добавь поле goalDays во все три части.", "source": "https://spring.io/guides/"}]
+[
+  {
+    "title": "Kotlin: привычки в коде",
+    "goal": "Опиши привычку и вычисли её прогресс.",
+    "theory": [
+      "Kotlin выводит тип из значения: val title = \"Читать\" имеет тип String. val запрещает переназначать переменную, var разрешает. Это не делает сам объект неизменяемым.",
+      "Функция объявляется через fun. Параметр записывается name: Type, возвращаемый тип — после скобок. Одно выражение можно записать после знака =.",
+      "data class создаёт equals, hashCode, toString и copy для свойств первичного конструктора. Названия свойств и функций пишем в camelCase, классов — в UpperCamelCase."
+    ],
+    "code": "data class Habit(val title: String, val days: Int)\n\nfun points(days: Int): Int = days * 10\n\nfun main() {\n    val habit = Habit(\"Читать\", 3)\n    println(\"${habit.title}: ${points(habit.days)} XP\")\n}",
+    "task": "Напиши функцию points: принимает days: Int, возвращает Int — количество дней, умноженное на 10.",
+    "answers": [
+      "fun points(days: Int): Int = days * 10",
+      "fun points(days: Int) = days * 10",
+      "fun points(days: Int): Int { return days * 10 }"
+    ],
+    "hint": "Начни с fun points(days: Int). Для одного выражения подходит =.",
+    "why": "Возвращаемое значение зависит от параметра. Тип Int можно указать явно или вывести. Блочная форма требует return.",
+    "quiz": "Какие утверждения верны?",
+    "options": [
+      "val запрещает переназначение",
+      "var разрешает переназначение",
+      "val делает любой объект неизменяемым",
+      "Тип можно вывести из значения"
+    ],
+    "correct": [
+      0,
+      1,
+      3
+    ],
+    "practice": "В Kotlin Playground создай три привычки. Добавь функцию percent(done: Int, target: Int): Int. Обработай target <= 0 и проверь (3, 10), (0, 10), (10, 10). Не подглядывая, объясни разницу val и var.",
+    "source": "https://kotlinlang.org/docs/kotlin-tour-welcome.html",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Что хранит переменная",
+          "paragraphs": [
+            "Программа оперирует значениями: числом выполненных дней, названием привычки, признаком выполнения. Переменная даёт значению имя. Когда ты пишешь val days = 3, компилятор понимает, что days — целое число Int. Строка в кавычках имеет тип String, true и false — Boolean. Тип определяет допустимые операции: числа можно складывать, строку — преобразовать в верхний регистр.",
+            "val означает, что этому имени нельзя присвоить другое значение. var нужен, когда значение меняется: счётчик выполнений может увеличиваться. Начинай с val и переходи к var, когда изменение действительно требуется. Сам объект за val иногда остаётся изменяемым — например, MutableList позволяет добавлять элементы."
+          ],
+          "code": "val title: String = \"Читать\"\nvar completedDays = 3\ncompletedDays += 1\nprintln(completedDays) // 4",
+          "explanation": "Явный тип после двоеточия необязателен, если значение позволяет его вывести. После += переменная completedDays хранит 4."
+        },
+        {
+          "title": "Функция: вход, действие, результат",
+          "paragraphs": [
+            "Функция выделяет правило, которое можно применить много раз. Параметры — входные данные, тело — вычисление, возвращаемое значение — результат. В points(days: Int) days является локальным именем параметра: при вызове points(3) оно получает значение 3.",
+            "Функция с блочным телом и результатом использует return. Если всё вычисление состоит из одного выражения, тело можно записать через =. Это две формы одной идеи. Если функция лишь выводит текст и не возвращает полезного значения, её результат имеет тип Unit. Вывод в консоль и возврат значения — разные действия."
+          ],
+          "code": "fun doubled(value: Int): Int {\n    return value * 2\n}\n\nfun doubledShort(value: Int) = value * 2\nprintln(doubled(4)) // 8",
+          "explanation": "Сначала вызывается doubled(4), она возвращает 8, затем println выводит результат. Внутри самой функции println не нужен."
+        },
+        {
+          "title": "Объект описывает конкретную привычку",
+          "paragraphs": [
+            "Класс задаёт структуру, а объект содержит конкретные значения. Habit(\"Читать\", 3) и Habit(\"Бегать\", 0) — два объекта одной структуры. Свойства title и days читаются через точку. data class подходит для небольших объектов данных: Kotlin генерирует удобные сравнение, печать и копирование.",
+            "copy создаёт новый объект с изменёнными свойствами. Это полезно для состояния интерфейса: вместо скрытого изменения старого объекта передаём новый. Копирование поверхностное: вложенный изменяемый объект автоматически не клонируется."
+          ],
+          "code": "data class Habit(val title: String, val days: Int)\nval original = Habit(\"Читать\", 3)\nval updated = original.copy(days = 4)\nprintln(original.days) // 3\nprintln(updated.days)  // 4",
+          "explanation": "Именованный аргумент days делает изменение явным. original не меняется."
+        },
+        {
+          "title": "Как читать и проверять код",
+          "paragraphs": [
+            "Читай небольшой пример по порядку: какие значения созданы, какая функция вызвана, что она возвращает, что выводится. Подставляй параметры мысленно и записывай ожидаемый результат до запуска. Если результат отличается, сравни входы и промежуточные значения.",
+            "Хорошее имя объясняет смысл: completedDays лучше x. Функция расчёта XP должна возвращать число, а отображение результата — выполняться отдельно. Так одно правило можно использовать и в консоли, и на Android-экране."
+          ],
+          "code": "val result = doubled(5)\nprintln(\"Результат: $result\")",
+          "explanation": "Шаблон $result подставляет значение переменной в строку. Для выражения используются фигурные скобки: ${doubled(5)}."
+        }
+      ],
+      "pitfalls": [
+        "Не путай println с return: первый показывает текст, второй отдаёт результат вызывающему коду.",
+        "Не меняй val присваиванием; для изменяющегося значения нужен var.",
+        "Не используй Int-деление, когда ожидаешь дробь: 3 / 10 равно 0."
+      ],
+      "question": "Почему функция расчёта, которая возвращает Int, удобнее функции, которая только печатает число?",
+      "answer": "Результат можно передать в UI, сравнить в тесте или использовать в другом вычислении. Напечатанный текст сам по себе не является возвращаемым результатом."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Null, коллекции и преобразования",
+    "goal": "Безопасно обработай список привычек.",
+    "theory": [
+      "String не принимает null, String? принимает. ?. выполняет обращение только для ненулевого значения. ?: задаёт запасное значение. !! может привести к NullPointerException.",
+      "listOf создаёт список с интерфейсом только для чтения; mutableListOf позволяет добавлять элементы. map преобразует каждый элемент, filter выбирает элементы, count считает подходящие.",
+      "Лямбда — передаваемая функция. В { it.days > 0 } it обозначает единственный параметр. if и when могут возвращать значение."
+    ],
+    "code": "val habits = listOf(Habit(\"Читать\", 3), Habit(\"Бегать\", 0))\nval active = habits.filter { it.days > 0 }\nval names = active.map { it.title }\nval nickname: String? = null\nprintln(nickname?.uppercase() ?: \"Гость\")",
+    "task": "Напиши выражение: из habits получить только привычки с days больше нуля.",
+    "answers": [
+      "habits.filter { it.days > 0 }",
+      "habits.filter { habit -> habit.days > 0 }"
+    ],
+    "hint": "Нужен filter, а внутри — логическое условие.",
+    "why": "filter сохраняет сами объекты, map меняет их представление. Именованный параметр и it дают одинаковый результат.",
+    "quiz": "Какие операции безопасны для nickname: String?",
+    "options": [
+      "nickname?.length",
+      "nickname!!.length",
+      "nickname ?: \"Гость\"",
+      "nickname.length"
+    ],
+    "correct": [
+      0,
+      2
+    ],
+    "practice": "Напиши totalDays и список названий активных привычек. Проверь пустой список и список, где у всех days = 0. Добавь nullable заметку к Habit и показывай «Нет заметки», если её нет.",
+    "source": "https://kotlinlang.org/docs/kotlin-tour-welcome.html",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Отсутствие значения — часть модели",
+          "paragraphs": [
+            "Пользователь может не написать заметку. String? явно говорит, что в переменной бывает строка или null. Обычный String не допускает null. Это проверяется компилятором: прежде чем вызвать свойство nullable-значения, надо определить, что делать при его отсутствии.",
+            "Не подменяй null пустой строкой без причины: «нет заметки» и «заметка есть, но пустая» могут иметь разный смысл. Модель должна отражать данные, а экран — выбирать, как их показать."
+          ],
+          "code": "val note: String? = null\nval length: Int? = note?.length\nval displayed = note ?: \"Нет заметки\"",
+          "explanation": "?. возвращает null, если note отсутствует. ?: возвращает правую часть только при null; пустая строка не активирует запасное значение."
+        },
+        {
+          "title": "Условия тоже возвращают значения",
+          "paragraphs": [
+            "В Kotlin if может быть выражением. Это позволяет выбрать значение без изменяемой промежуточной переменной. when удобен, когда вариантов несколько. Для выражения нужно учесть все необходимые ветки, чтобы результат существовал при каждом входе.",
+            "Проверка null в условии часто позволяет компилятору уточнить тип переменной в ветке. Это называют smart cast. Для изменяемых свойств, которые могут поменяться между проверкой и чтением, такое уточнение не всегда возможно."
+          ],
+          "code": "fun status(days: Int): String = when {\n    days < 0 -> \"Ошибка\"\n    days == 0 -> \"Ещё не начато\"\n    else -> \"Есть прогресс\"\n}",
+          "explanation": "Проверки идут сверху вниз. Срабатывает первая подходящая ветка."
+        },
+        {
+          "title": "Список и цепочка преобразований",
+          "paragraphs": [
+            "List<Habit> хранит несколько привычек. filter проходит по элементам и оставляет те, для которых условие true. map применяет преобразование к каждому элементу. Получается понятная цепочка: выбрать активные привычки, затем взять их названия.",
+            "Лямбда в фигурных скобках — функция, которую передают другой функции. it является сокращением для единственного параметра. Если цепочка сложная, именуй параметр habit: так проще увидеть, к чему относится свойство."
+          ],
+          "code": "val names = habits\n    .filter { habit -> habit.days > 0 }\n    .map { habit -> habit.title }",
+          "explanation": "После filter результат всё ещё List<Habit>. После map результат уже List<String>. Порядок операций влияет на доступные свойства."
+        },
+        {
+          "title": "Изменяемость списка и граничные случаи",
+          "paragraphs": [
+            "listOf даёт интерфейс списка только для чтения. mutableListOf позволяет add и remove. val у списка запрещает менять ссылку, но не запрещает mutableListOf менять свои элементы. Если UI должен реагировать на изменения, простой mutableListOf без наблюдаемого состояния этого не обеспечивает.",
+            "Проверь пустой список, отсутствие подходящих привычек и null-заметку. filter и map нормально работают с пустыми списками. first может выбросить исключение, если элемента нет; firstOrNull возвращает nullable-результат."
+          ],
+          "code": "val firstActive = habits.firstOrNull { it.days > 0 }\nval label = firstActive?.title ?: \"Активных привычек нет\"",
+          "explanation": "Запасной текст позволяет показать понятное пустое состояние, а не аварийно завершить экран."
+        }
+      ],
+      "pitfalls": [
+        "!! не исправляет отсутствие значения, а перекладывает проверку на момент выполнения.",
+        "Не используй map, если нужно сохранить сами объекты и только отобрать их.",
+        "Не считай val mutableListOf неизменяемым списком."
+      ],
+      "question": "Какой тип будет у habits.filter { it.days > 0 }.map { it.title }?",
+      "answer": "List<String>: filter сохраняет Habit, а map заменяет каждый Habit его строковым title."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Android Views: TextView и события",
+    "goal": "Собери первый экран с XML.",
+    "theory": [
+      "Создай Android-проект Empty Views Activity в Android Studio. Activity — точка входа в экран. setContentView связывает Activity с XML-разметкой.",
+      "TextView показывает текст, EditText принимает ввод, Button запускает действие. Для доступа к View можно использовать View Binding; здесь сначала разбираем findViewById.",
+      "UI обновляется в главном потоке. При повороте Activity может пересоздаться: состояние хранится в ViewModel или SavedStateHandle, а не только в полях Activity."
+    ],
+    "code": "// res/layout/activity_main.xml\n<TextView xmlns:android=\"http://schemas.android.com/apk/res/android\"\n    android:id=\"@+id/title\"\n    android:layout_width=\"match_parent\"\n    android:layout_height=\"wrap_content\"\n    android:text=\"Мои привычки\" />\n\n// В onCreate после super.onCreate(savedInstanceState)\nsetContentView(R.layout.activity_main)\nval title = findViewById<TextView>(R.id.title)\ntitle.text = \"Сегодня: 3 привычки\"",
+    "task": "Переменная title имеет тип TextView. Напиши строку, которая устанавливает текст «Готово».",
+    "answers": [
+      "title.text = \"Готово\"",
+      "title.setText(\"Готово\")"
+    ],
+    "hint": "У TextView есть свойство text и метод setText.",
+    "why": "Kotlin позволяет обращаться к Java getter/setter как к свойствам. Оба варианта изменяют видимый текст.",
+    "quiz": "Какие утверждения верны?",
+    "options": [
+      "TextView выводит текст",
+      "Долгую сеть можно выполнить прямо в onCreate",
+      "Activity может пересоздаться",
+      "Кнопка обрабатывает действие через слушатель"
+    ],
+    "correct": [
+      0,
+      2,
+      3
+    ],
+    "practice": "Добавь EditText и Button в LinearLayout. По нажатию показывай введённое название в TextView. Пустой ввод должен показывать ошибку. Вынеси строки в strings.xml. Запусти на эмуляторе и проверь поворот экрана.",
+    "source": "https://developer.android.com/courses/android-basics-compose/course",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Из чего состоит Android-экран",
+          "paragraphs": [
+            "Activity участвует в жизненном цикле экрана. Android создаёт её, вызывает onCreate, показывает и позже может остановить или пересоздать. XML описывает дерево View: контейнеры определяют расположение, TextView рисует текст, EditText принимает ввод, Button обрабатывает нажатие.",
+            "setContentView загружает дерево из XML. До этого findViewById не найдёт элемент этой разметки. id связывает Kotlin-код с конкретным View. Размер match_parent занимает доступную ширину, wrap_content соответствует содержимому."
+          ],
+          "code": "super.onCreate(savedInstanceState)\nsetContentView(R.layout.activity_main)\nval title = findViewById<TextView>(R.id.title)",
+          "explanation": "R — сгенерированный доступ к ресурсам. layout относится к файлу разметки, id — к идентификатору элемента внутри дерева."
+        },
+        {
+          "title": "Как событие превращается в действие",
+          "paragraphs": [
+            "Слушатель клика получает управление после нажатия. Ты не вызываешь обработчик постоянно: регистрируешь поведение и Android вызовет его при событии. Внутри читается ввод, проверяется правило и обновляется текст.",
+            "Важно отделять обработку ввода от сложной логики. Слушатель должен быть коротким: собрать данные, вызвать функцию, показать результат. Это облегчает переход к ViewModel и проверку логики отдельно от UI."
+          ],
+          "code": "button.setOnClickListener {\n    val value = input.text.toString().trim()\n    if (value.isBlank()) {\n        input.error = \"Введи название\"\n    } else {\n        title.text = value\n    }\n}",
+          "explanation": "trim убирает пробелы по краям. isBlank предотвращает создание названия из одних пробелов."
+        },
+        {
+          "title": "Ресурсы и понятные размеры",
+          "paragraphs": [
+            "Текст для экрана храни в strings.xml: его легче переводить и переиспользовать. Размеры отступов задают в dp, размеры текста — в sp, чтобы учитывать настройки шрифта. Пиксели зависят от плотности устройства.",
+            "View Binding генерирует типизированные ссылки на элементы. Это удобнее повторных findViewById, особенно при росте экрана. Сначала разбираем ручной поиск, чтобы было понятно, откуда появляется View; потом используем binding как более удобный способ доступа."
+          ],
+          "code": "<string name=\"habits_title\">Мои привычки</string>\n\n<!-- В разметке -->\n<!-- android:text=\"@string/habits_title\" -->",
+          "explanation": "Один ресурс может использоваться в нескольких местах. Пользовательский ввод не является ресурсом — это данные."
+        },
+        {
+          "title": "Почему состояние нельзя доверять одному View",
+          "paragraphs": [
+            "При повороте Android может создать новую Activity и новое дерево View. Данные, которые были только в обычном поле или тексте старого View, могут потеряться. ViewModel переживает типичное изменение конфигурации, SavedStateHandle помогает восстанавливать небольшие значения после восстановления процесса.",
+            "UI работает на главном потоке. Если выполнить там долгую сеть или чтение большого файла, экран перестанет реагировать. Обновление текста короткое, а загрузку переносим в подходящую асинхронную операцию."
+          ],
+          "code": "// Проверка вручную:\n// 1. Введи название.\n// 2. Поверни устройство.\n// 3. Убедись, что нужное состояние восстановлено.",
+          "explanation": "Тест поворота быстро обнаруживает, что данные случайно были связаны с конкретным экземпляром экрана."
+        }
+      ],
+      "pitfalls": [
+        "Не вызывай findViewById для разметки до setContentView.",
+        "Не выполняй сетевой запрос в слушателе на главном потоке.",
+        "Не смешивай dp и sp: текст должен уважать размер шрифта пользователя."
+      ],
+      "question": "Почему после поворота текст может исчезнуть, хотя кнопка раньше успешно его меняла?",
+      "answer": "Пересоздались Activity и её View. Если источник данных не восстановлен, новый TextView получает исходное состояние."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "RecyclerView: список и ViewHolder",
+    "goal": "Сделай прокручиваемый список привычек.",
+    "theory": [
+      "RecyclerView повторно использует представления элементов. Adapter создаёт ViewHolder и связывает его с данными. ViewHolder хранит ссылки на View строки.",
+      "onCreateViewHolder создаёт строку, onBindViewHolder заполняет её, getItemCount возвращает размер. LayoutManager задаёт расположение.",
+      "Для обновляемых списков используй ListAdapter с DiffUtil. areItemsTheSame сравнивает устойчивый id, areContentsTheSame — содержимое. Это позволяет обновлять только изменившиеся строки."
+    ],
+    "code": "// После подключения зависимости androidx.recyclerview\nval recycler = findViewById<RecyclerView>(R.id.habits)\nrecycler.layoutManager = LinearLayoutManager(this)\nrecycler.adapter = adapter\n\n// В адаптере:\noverride fun getItemCount(): Int = items.size\n\noverride fun onBindViewHolder(holder: HabitHolder, position: Int) {\n    holder.title.text = items[position].title\n}",
+    "task": "В адаптере есть items: List<Habit>. Напиши getItemCount, возвращающий размер списка.",
+    "answers": [
+      "override fun getItemCount(): Int = items.size",
+      "override fun getItemCount() = items.size",
+      "override fun getItemCount(): Int { return items.size }"
+    ],
+    "hint": "Переопредели функцию с override. Размер списка — свойство size.",
+    "why": "RecyclerView запрашивает число строк у адаптера. Здесь нужна длина данных, а не фиксированное число.",
+    "quiz": "Что относится к RecyclerView?",
+    "options": [
+      "ViewHolder хранит View строки",
+      "LayoutManager задаёт расположение",
+      "Каждое обновление требует нового Activity",
+      "DiffUtil сравнивает элементы"
+    ],
+    "correct": [
+      0,
+      1,
+      3
+    ],
+    "practice": "Создай row_habit.xml с названием и счётчиком. Реализуй HabitHolder и Adapter с тремя методами. Покажи 30 привычек. Добавь обработчик нажатия через callback. Затем замени Adapter на ListAdapter и проверь обновление одной строки.",
+    "source": "https://developer.android.com/develop/ui/views/layout/recyclerview",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Зачем нужен RecyclerView",
+          "paragraphs": [
+            "Прокручиваемый список может содержать тысячи привычек, но одновременно видно лишь несколько строк. Создавать View для всех элементов дорого. RecyclerView переиспользует строки, которые уходят за экран, и привязывает их к новым данным.",
+            "Данные не находятся в самих строках: источником истины служит список моделей. View показывает конкретную модель только пока она к нему привязана. Поэтому старый текст или галочка обязательно должны заменяться при повторной привязке."
+          ],
+          "code": "// Строка, показывавшая Habit(id=1),\n// позже может показывать Habit(id=20).\n// bind должен заново выставить все её свойства.",
+          "explanation": "Переиспользование объясняет странные «чужие галочки», если часть состояния строки не обновляется."
+        },
+        {
+          "title": "Три обязанности адаптера",
+          "paragraphs": [
+            "onCreateViewHolder создаёт представление строки и Holder со ссылками на её элементы. onBindViewHolder берёт модель по позиции и заполняет View. getItemCount сообщает число доступных элементов. LayoutManager решает, как строки расположены и прокручиваются.",
+            "ViewHolder помогает не искать внутренние View каждый раз. Удобно дать ему метод bind(habit), чтобы одна функция отвечала за заполнение всех полей строки."
+          ],
+          "code": "fun bind(habit: Habit) {\n    title.text = habit.title\n    counter.text = habit.days.toString()\n    counter.visibility = View.VISIBLE\n}",
+          "explanation": "Даже свойства вроде visibility и enabled нужно назначать по текущей модели, если они различаются между строками."
+        },
+        {
+          "title": "События и стабильные идентификаторы",
+          "paragraphs": [
+            "Позиция обозначает место в текущем списке, а id обозначает объект. После удаления или сортировки позиция меняется. При нажатии передавай callback с текущей моделью или её id, чтобы действие относилось к нужной привычке.",
+            "Не сохраняй position из старого bind на неопределённое время. Если читаешь bindingAdapterPosition при клике, проверь RecyclerView.NO_POSITION. Для сервера удаление и обновление должны использовать устойчивый id."
+          ],
+          "code": "holder.itemView.setOnClickListener {\n    val position = holder.bindingAdapterPosition\n    if (position != RecyclerView.NO_POSITION) {\n        onHabitClick(items[position])\n    }\n}",
+          "explanation": "Callback передаёт событие наружу. Сам адаптер не обязан решать, какой экран открывать или как обращаться к API."
+        },
+        {
+          "title": "Как обновлять список",
+          "paragraphs": [
+            "ListAdapter принимает новый список через submitList и использует DiffUtil для сравнения. areItemsTheSame сравнивает id, areContentsTheSame — видимые данные. Отсюда получаются точечные обновления и анимации вместо перерисовки всего списка.",
+            "Передавай новый список и новые изменённые модели. Если изменить старый объект в том же списке, сравнение может не заметить разницу. Для простого первого примера обычный Adapter допустим, но обновляемое приложение лучше строить вокруг явного нового состояния."
+          ],
+          "code": "override fun areItemsTheSame(old: HabitDto, new: HabitDto) = old.id == new.id\noverride fun areContentsTheSame(old: HabitDto, new: HabitDto) = old == new",
+          "explanation": "Сравнение содержимого корректно, если equals отражает нужные поля модели, например у data class."
+        }
+      ],
+      "pitfalls": [
+        "Не считай позицию постоянным id.",
+        "Не оставляй состояние старой строки при bind.",
+        "Не меняй ListAdapter.currentList на месте."
+      ],
+      "question": "Почему два элемента с одинаковым названием не должны считаться одним элементом?",
+      "answer": "Название может повторяться и меняться. Личность привычки определяется устойчивым id."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Compose: UI как функция состояния",
+    "goal": "Перенеси список на Jetpack Compose.",
+    "theory": [
+      "Создай Empty Activity с Compose. @Composable помечает функции интерфейса. Text — текст, Button — действие, LazyColumn — ленивый вертикальный список.",
+      "Compose перерисовывает части интерфейса при изменении наблюдаемого состояния. remember хранит значение между рекомпозициями, rememberSaveable — также при типичных пересозданиях.",
+      "Поднимай состояние вверх: экран получает данные и callback, а ViewModel хранит бизнес-состояние. Не запускай HTTP-запрос просто в теле composable — оно может вызываться повторно."
+    ],
+    "code": "@Composable\nfun Counter() {\n    var count by rememberSaveable { mutableStateOf(0) }\n    Column {\n        Text(\"Выполнено: $count\")\n        Button(onClick = { count++ }) {\n            Text(\"Отметить\")\n        }\n    }\n}\n// Нужны imports для getValue и setValue\n// androidx.compose.runtime.getValue / setValue",
+    "task": "Напиши composable-функцию HabitTitle с параметром title: String, показывающую Text(title).",
+    "answers": [
+      "@Composable fun HabitTitle(title: String) { Text(title) }",
+      "@Composable fun HabitTitle(title: String) = Text(title)"
+    ],
+    "hint": "Пометь функцию @Composable и вызови Text внутри.",
+    "why": "Компонент зависит от входного title. Его можно переиспользовать и проверять в Preview.",
+    "quiz": "Какие решения правильные?",
+    "options": [
+      "Список показывать через LazyColumn",
+      "Сетевой запрос вызывать при каждой рекомпозиции",
+      "Состояние экрана держать в ViewModel",
+      "Для UI использовать @Composable"
+    ],
+    "correct": [
+      0,
+      2,
+      3
+    ],
+    "practice": "Собери экран с LazyColumn, строкой HabitRow и FloatingActionButton. Добавь диалог создания привычки и проверку пустого названия. Используй key = { it.id }. Проверь список на маленьком экране и с крупным шрифтом.",
+    "source": "https://developer.android.com/courses/pathways/compose",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Декларативный интерфейс",
+          "paragraphs": [
+            "В Views ты находишь TextView и меняешь его текст. В Compose ты описываешь, какой UI соответствует текущему состоянию. Если state изменился, Compose снова вызывает нужные функции и получает новое описание. Это позволяет связать данные и отображение явно.",
+            "Composable может выполняться многократно. Её тело должно описывать интерфейс, а не случайно отправлять запрос, записывать файл или начислять XP при каждом повторном вызове. Такие действия запускают через обработчики событий или специальные API эффектов."
+          ],
+          "code": "@Composable\nfun Greeting(name: String) {\n    Text(\"Привет, $name\")\n}",
+          "explanation": "Функция описывает текст для переданного name. Её повторный вызов не создаёт самостоятельное пользовательское событие."
+        },
+        {
+          "title": "Состояние и рекомпозиция",
+          "paragraphs": [
+            "Обычная локальная переменная не является наблюдаемым состоянием. mutableStateOf создаёт состояние, изменение которого Compose отслеживает. remember сохраняет объект между рекомпозициями, rememberSaveable дополнительно сохраняет поддерживаемые значения при типичных пересозданиях.",
+            "by делает чтение и запись делегированного состояния похожими на работу с обычной переменной. Для этого нужны импорты getValue и setValue. Без by можно обращаться к state.value напрямую."
+          ],
+          "code": "var count by rememberSaveable { mutableStateOf(0) }\nButton(onClick = { count++ }) {\n    Text(\"Выполнено: $count\")\n}",
+          "explanation": "Нажатие меняет count. Compose обновляет текст, читающий это состояние. rememberSaveable не заменяет базу данных."
+        },
+        {
+          "title": "Поднятие состояния и события",
+          "paragraphs": [
+            "Компонент проще переиспользовать, когда он получает значение и сообщает о желаемом изменении callback-ом. Родитель хранит состояние и решает, что делать с событием. Такой подход называют state hoisting.",
+            "HabitRow может получать habit и onToggle. Ему не нужно знать URL сервера или способ хранения. ViewModel превращает пользовательское действие в операцию репозитория и выдаёт новое состояние экрана."
+          ],
+          "code": "@Composable\nfun HabitRow(title: String, done: Boolean, onToggle: () -> Unit) {\n    Row {\n        Text(title)\n        Checkbox(checked = done, onCheckedChange = { onToggle() })\n    }\n}",
+          "explanation": "Однонаправленный поток: данные идут вниз в UI, события — вверх к владельцу состояния."
+        },
+        {
+          "title": "Список, ключи и эффекты",
+          "paragraphs": [
+            "LazyColumn создаёт содержимое по мере необходимости. Для изменяющегося списка задавай key через уникальный id: это помогает связать состояние строки с конкретной привычкой при вставке и перестановке.",
+            "LaunchedEffect запускает корутину, привязанную к нахождению компонента в композиции и ключам эффекта. Для действия по кнопке подходит rememberCoroutineScope, а бизнес-загрузку обычно ведёт ViewModel. Не запускай одинаковую загрузку из нескольких источников без причины."
+          ],
+          "code": "LazyColumn {\n    items(habits, key = { it.id }) { habit ->\n        Text(habit.title)\n    }\n}",
+          "explanation": "Для items(List) нужен импорт androidx.compose.foundation.lazy.items. id должен быть уникальным среди элементов."
+        }
+      ],
+      "pitfalls": [
+        "Не используй обычный var как единственный источник реактивного UI.",
+        "Не отправляй HTTP-запрос в теле composable.",
+        "Не используй название привычки как ключ, если оно может повторяться."
+      ],
+      "question": "Зачем передавать done и onToggle в строку, если можно хранить done внутри неё?",
+      "answer": "Владелец состояния сохраняет согласованность списка и данных. Строка лишь отображает значение и сообщает о событии, поэтому не возникает отдельной несинхронизированной копии."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Корутины: синхронно и асинхронно",
+    "goal": "Загружай данные, не блокируя интерфейс.",
+    "theory": [
+      "Синхронная операция завершается до следующей строки. Асинхронная позволяет вызывающему коду продолжить работу. suspend означает возможность приостановки корутины, а не автоматический фоновый поток.",
+      "viewModelScope.launch запускает корутину, отменяемую при очистке ViewModel. Для блокирующего ввода-вывода используй withContext(Dispatchers.IO). Suspend-методы Retrofit обычно сами выполняют сетевую работу вне главного потока.",
+      "Обрабатывай Loading, Success и Error. Не поглощай CancellationException. async нужен для результата Deferred, await ожидает его. Не используй GlobalScope для обычных экранных задач."
+    ],
+    "code": "fun load() = viewModelScope.launch {\n    state.value = UiState.Loading\n    try {\n        state.value = UiState.Success(repository.load())\n    } catch (e: CancellationException) {\n        throw e\n    } catch (e: Exception) {\n        state.value = UiState.Error(\"Не удалось загрузить\")\n    }\n}\n\nsuspend fun readFile(): String =\n    withContext(Dispatchers.IO) { file.readText() }",
+    "task": "Напиши вызов, который выполняет file.readText() в Dispatchers.IO через withContext.",
+    "answers": [
+      "withContext(Dispatchers.IO) { file.readText() }"
+    ],
+    "hint": "withContext принимает контекст и блок кода.",
+    "why": "Блокирующее чтение файла не должно занимать главный поток. Приостановка позволяет UI продолжать обрабатывать события.",
+    "quiz": "Какие утверждения верны?",
+    "options": [
+      "suspend всегда создаёт фоновый поток",
+      "viewModelScope связан с жизнью ViewModel",
+      "CancellationException нужно распространять",
+      "Для блокирующего IO подходит Dispatchers.IO"
+    ],
+    "correct": [
+      1,
+      2,
+      3
+    ],
+    "practice": "В репозитории задержи результат через delay(1500). Покажи индикатор загрузки, ошибку и кнопку повтора. Во время ожидания счётчик на экране должен оставаться отзывчивым. Сравни с блокирующим Thread.sleep в отдельном учебном примере; не оставляй его в UI.",
+    "source": "https://developer.android.com/kotlin/coroutines",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Последовательность и блокировка",
+          "paragraphs": [
+            "Последовательный код выполняет шаги по порядку. Это удобно: сначала получи данные, затем обработай результат. Но если первый шаг долго удерживает главный поток, Android не может обрабатывать нажатия и рисовать кадры.",
+            "Корутина позволяет выразить последовательную логику с возможностью приостановки. Во время ожидания suspend-операции поток может выполнять другую работу. Suspend не означает «создать новый поток» и не делает любой код неблокирующим."
+          ],
+          "code": "suspend fun demo() {\n    delay(1000)\n    println(\"Прошла секунда\")\n}",
+          "explanation": "delay приостанавливает корутину без блокирования потока. Thread.sleep блокирует поток и для ожидания в UI не подходит."
+        },
+        {
+          "title": "Scope, dispatcher и время жизни",
+          "paragraphs": [
+            "Scope определяет, кому принадлежит работа и когда она отменяется. viewModelScope принадлежит ViewModel; rememberCoroutineScope — текущему Compose-компоненту. Dispatcher определяет, на каких потоках выполняется код. Dispatchers.Main предназначен для UI, IO — для блокирующего ввода-вывода, Default — для вычислений.",
+            "withContext временно меняет контекст и возвращает результат. Само объявление suspend fun readFile не переносит file.readText с главного потока. Именно withContext(IO) делает эту часть подходящей для блокирующего чтения."
+          ],
+          "code": "suspend fun loadText(file: File): String =\n    withContext(Dispatchers.IO) {\n        file.readText()\n    }",
+          "explanation": "После завершения withContext вызывающая корутина продолжит выполнение в своём исходном контексте."
+        },
+        {
+          "title": "launch, async и структурированная работа",
+          "paragraphs": [
+            "launch запускает работу и возвращает Job: он нужен, когда результат получают через изменение состояния или побочный эффект. async возвращает Deferred<T>, у которого await получает значение. Две async-задачи можно запустить до ожидания, если операции независимы.",
+            "Не добавляй async вокруг каждого вызова. Последовательные suspend-вызовы яснее, если второй зависит от первого. Структурированная конкурентность связывает дочерние задачи с родителем, поэтому отмена и ошибки не теряются в бесконтрольном фоне."
+          ],
+          "code": "coroutineScope {\n    val profile = async { loadProfile() }\n    val habits = async { loadHabits() }\n    show(profile.await(), habits.await())\n}",
+          "explanation": "Обе загрузки начинаются до await. Это имеет смысл только при независимых запросах и корректных suspend-реализациях."
+        },
+        {
+          "title": "Состояние, ошибки и отмена",
+          "paragraphs": [
+            "Пока данные загружаются, UI показывает Loading. После успеха — список, после ошибки — понятное сообщение и повтор. Не стирай уже полезные данные без причины при каждом обновлении. Защищайся от двойного запуска операции по кнопке.",
+            "CancellationException сигнализирует об отмене. Если ловишь общий Exception, отдельно распространяй отмену через throw. Иначе корутина может вести себя так, будто отмена — обычная ошибка пользователя."
+          ],
+          "code": "try {\n    val data = repository.load()\n    state.value = UiState.Success(data)\n} catch (e: CancellationException) {\n    throw e\n} catch (e: Exception) {\n    state.value = UiState.Error(\"Загрузка не удалась\")\n}",
+          "explanation": "Повтор должен запускать ту же операцию, а индикатор загрузки обязан завершаться при любом исходе."
+        }
+      ],
+      "pitfalls": [
+        "suspend сам не переносит блокирующую работу в фон.",
+        "Не используй GlobalScope для обычной экранной задачи.",
+        "Не поглощай отмену общим catch."
+      ],
+      "question": "Чем delay отличается от Thread.sleep, если обе операции ждут секунду?",
+      "answer": "delay приостанавливает корутину, освобождая поток. Thread.sleep удерживает поток всю секунду, поэтому в главном потоке блокирует интерфейс."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Android-проект: CRUD и API-клиент",
+    "goal": "Собери полный пользовательский сценарий.",
+    "theory": [
+      "Раздели приложение на UI → ViewModel → Repository → API. DTO описывает сетевой формат, модель UI — удобное для экрана представление. id нужен для обновления и удаления конкретной привычки.",
+      "Используй Retrofit с JSON-конвертером и suspend-методами. Добавь разрешение INTERNET. Адрес 10.0.2.2 в стандартном Android-эмуляторе ведёт к localhost компьютера; localhost внутри эмулятора — сам эмулятор.",
+      "Для локальной разработки HTTP требует явной настройки network security только для отладки. Для реального сервера используй HTTPS. Ключи и пароли не храни в приложении. API заработает на третьей неделе; до этого используй FakeRepository."
+    ],
+    "code": "interface HabitApi {\n    @GET(\"api/habits\")\n    suspend fun list(): List<HabitDto>\n\n    @POST(\"api/habits\")\n    suspend fun create(@Body body: HabitRequest): HabitDto\n\n    @DELETE(\"api/habits/{id}\")\n    suspend fun delete(@Path(\"id\") id: Long)\n}\n\ndata class HabitRequest(val title: String)\ndata class HabitDto(val id: Long, val title: String, val done: Boolean)",
+    "task": "Какой HTTP-метод нужен для получения списка без изменения данных? Введи название метода.",
+    "answers": [
+      "GET"
+    ],
+    "hint": "Это метод чтения ресурса.",
+    "why": "GET читает данные. POST обычно создаёт ресурс, PUT заменяет или обновляет, DELETE удаляет.",
+    "quiz": "Что должно быть в готовом приложении?",
+    "options": [
+      "Обработка пустого списка",
+      "Пароль базы данных в APK",
+      "Экран ошибки и повтор",
+      "Отмена задач при уходе с экрана"
+    ],
+    "correct": [
+      0,
+      2,
+      3
+    ],
+    "practice": "Сделай список, создание, редактирование названия, отметку done и удаление. Реализуй FakeRepository, затем HabitApi с GET/POST/PUT/DELETE. На каждую операцию показывай результат или ошибку. Сохраняй форму при повороте. Попроси другого человека создать и удалить привычку без объяснений.",
+    "source": "https://developer.android.com/topic/architecture",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Что означает полное CRUD-приложение",
+          "paragraphs": [
+            "CRUD — создание, чтение, изменение и удаление. Для привычек это добавить название, получить список, переименовать или изменить done и удалить запись. Каждая операция имеет успешный результат и возможную ошибку, которые надо показать на экране.",
+            "Сначала собери всё с FakeRepository: обычным локальным хранилищем, имитирующим сервер. Так интерфейс можно писать до готовности Spring. Позже заменяешь реализацию репозитория, сохраняя его контракт."
+          ],
+          "code": "interface HabitRepository {\n    suspend fun list(): List<HabitDto>\n    suspend fun create(title: String): HabitDto\n    suspend fun update(id: Long, title: String, done: Boolean): HabitDto\n    suspend fun delete(id: Long)\n}",
+          "explanation": "Контракт задаёт операции, а конкретная реализация решает, где данные находятся."
+        },
+        {
+          "title": "Роли слоёв приложения",
+          "paragraphs": [
+            "UI рисует состояние и сообщает о событиях. ViewModel управляет состоянием экрана и запускает операции. Repository предоставляет данные и скрывает источники. API-клиент преобразует вызов функции в HTTP-запрос.",
+            "DTO описывает сетевой JSON. Если серверная структура неудобна для экрана, преобразуй её в UI-модель отдельно. Это позволяет менять оформление без изменения контракта API. Устойчивый id нужен всем клиентам, чтобы изменять одну и ту же запись."
+          ],
+          "code": "data class HabitDto(val id: Long, val title: String, val done: Boolean)\ndata class HabitRowUi(val id: Long, val title: String, val status: String)\n\nfun HabitDto.toUi() = HabitRowUi(id, title, if (done) \"Готово\" else \"В плане\")",
+          "explanation": "Преобразование является обычной функцией: её легко проверить без Android и сети."
+        },
+        {
+          "title": "Retrofit и адрес сервера",
+          "paragraphs": [
+            "Retrofit описывает маршруты аннотациями. @Body передаёт JSON-тело, @Path подставляет параметр пути. Для сериализации требуется выбранный JSON-конвертер. baseUrl должен заканчиваться слешем.",
+            "В стандартном Android-эмуляторе 10.0.2.2 указывает на компьютер-разработчик. На физическом телефоне нужен доступный ему сетевой адрес сервера. INTERNET разрешается в манифесте; отладочный HTTP и настоящий HTTPS настраиваются отдельно."
+          ],
+          "code": "@PUT(\"api/habits/{id}\")\nsuspend fun update(\n    @Path(\"id\") id: Long,\n    @Body request: HabitRequest\n): HabitDto",
+          "explanation": "Имя id в @Path должно совпадать с фигурными скобками в маршруте. Retrofit — зависимость проекта, эти аннотации не встроены в Kotlin."
+        },
+        {
+          "title": "Проверка пользовательского сценария",
+          "paragraphs": [
+            "Создание начинается с формы, затем проверки ввода, Loading, запроса и обновления списка после успешного ответа. Сервер возвращает фактический объект с id. При ошибке сохрани введённое название и дай повторить действие.",
+            "Проверь отсутствие сети, пустой список, повторное нажатие и удаление отсутствующей записи. Важно не только «запрос сработал», но и «пользователь понимает, что происходит». Синхронизация с админкой сначала выполняется повторной загрузкой списка."
+          ],
+          "code": "// Порядок проверки:\n// создать → получить → изменить → получить → удалить → получить\n// затем повторить с отключённой сетью",
+          "explanation": "Курс приводит к учебному продукту; offline-конфликты, production-авторизация и публикация требуют отдельной практики."
+        }
+      ],
+      "pitfalls": [
+        "localhost на телефоне не означает компьютер с сервером.",
+        "Не добавляй пароль базы данных или администратора в APK.",
+        "Не убирай форму после неуспешного запроса: пользователь потеряет ввод."
+      ],
+      "question": "Почему приложение можно начать до готовности сервера?",
+      "answer": "UI и ViewModel зависят от контракта Repository. FakeRepository реализует те же операции; сетевую реализацию подключают позже."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Java после Kotlin",
+    "goal": "Перепиши модель и функцию на Java.",
+    "theory": [
+      "Java и Kotlin на JVM могут работать вместе. В Java тип обычно стоит перед именем; строки заканчиваются точкой с запятой. Методы входят в классы.",
+      "Для простых неизменяемых DTO подходит record. Обычный class позволяет управлять состоянием и поведением; private закрывает поле от внешнего доступа.",
+      "Поставь JDK 21 для учебного проекта. Начни с jshell или IntelliJ IDEA. java -version проверяет установленный JDK. Не путай Java с JavaScript."
+    ],
+    "code": "public record Habit(long id, String title, boolean done) {}\n\npublic class Points {\n    public static int points(int days) {\n        return days * 10;\n    }\n}",
+    "task": "Напиши метод public static int points(int days), возвращающий days * 10.",
+    "answers": [
+      "public static int points(int days) { return days * 10; }"
+    ],
+    "hint": "В Java тип возвращаемого значения идёт перед именем метода.",
+    "why": "static позволяет вызывать метод без экземпляра Points. return завершает метод и возвращает результат.",
+    "quiz": "Какие утверждения верны?",
+    "options": [
+      "Java и Kotlin могут работать на JVM",
+      "В Java тип пишется перед именем параметра",
+      "record подходит для DTO",
+      "Java — другое имя JavaScript"
+    ],
+    "correct": [
+      0,
+      1,
+      2
+    ],
+    "practice": "Создай Habit.java и Points.java. Напиши main, который создаёт три Habit и выводит их. Перенеси функцию percent с первой недели и сравни поведение на одинаковых входных данных.",
+    "source": "https://dev.java/learn/",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Как Java выполняется на JVM",
+          "paragraphs": [
+            "Исходник .java компилируется в байткод .class, а JVM выполняет байткод. JDK включает инструменты разработки, в том числе javac. Java и Kotlin могут обращаться к классам друг друга на JVM, но их синтаксис различается.",
+            "В Java тип стоит перед именем: int days, String title. Точка с запятой завершает большинство инструкций. Метод помещают в класс; класс обычно лежит в файле с совпадающим именем."
+          ],
+          "code": "public class Main {\n    public static void main(String[] args) {\n        int days = 3;\n        System.out.println(days);\n    }\n}",
+          "explanation": "main — привычная точка входа учебной Java-программы. Имя файла для public class Main — Main.java."
+        },
+        {
+          "title": "Методы, static и экземпляры",
+          "paragraphs": [
+            "Обычный метод работает с конкретным экземпляром. static относится к классу и вызывается без создания объекта. Простое вычисление без состояния часто можно сделать static, но бизнес-сервис с зависимостями удобнее как объект.",
+            "return возвращает результат; System.out.println лишь выводит его. int — примитивное целое, boolean — логическое значение, String — объект строки. Integer — объектная оболочка int и используется, например, в коллекциях."
+          ],
+          "code": "public static int doubled(int value) {\n    return value * 2;\n}\n\nint result = doubled(4);",
+          "explanation": "Аргумент 4 копируется в параметр value. Результат 8 записывается в result."
+        },
+        {
+          "title": "Класс и record для данных",
+          "paragraphs": [
+            "record описывает компактный объект данных с фиксированными компонентами. Для record Habit(long id, String title, boolean done) генерируются методы id(), title(), done(), сравнение и печать. Это удобная форма DTO, если проект использует подходящий JDK.",
+            "Record не делает вложенные объекты глубоко неизменяемыми. Обычный класс нужен, если требуются управляемые изменения и дополнительное поведение. JPA-сущность в нашем курсе будет обычным классом, а публичные DTO — record."
+          ],
+          "code": "public record Habit(long id, String title, boolean done) {}\nHabit habit = new Habit(1L, \"Читать\", false);\nSystem.out.println(habit.title());",
+          "explanation": "В Java создаём объект через new и читаем компонент record через метод с круглыми скобками."
+        },
+        {
+          "title": "Сравнение с привычным Kotlin",
+          "paragraphs": [
+            "Kotlin val соответствует идее запрета переназначения; в Java часто используется final. Kotlin Boolean и Java boolean не имеют одинакового поведения с null. Java допускает null у ссылочных типов без встроенной обязательной проверки на уровне языка.",
+            "Сравнивай строки через equals, а не ==: == у объектов сравнивает ссылки. Objects.equals(a, b) позволяет безопасно сравнить nullable-ссылки. Это частая ошибка при переносе мышления из Kotlin, где == обычно вызывает содержательное сравнение."
+          ],
+          "code": "String a = new String(\"Read\");\nString b = new String(\"Read\");\nSystem.out.println(a.equals(b)); // true",
+          "explanation": "Одинаковый текст не означает один и тот же объект. equals выражает сравнение содержимого."
+        }
+      ],
+      "pitfalls": [
+        "Не переноси Kotlin == для строк в Java без понимания ссылок.",
+        "Не путай JDK с IDE: IDE использует настроенный JDK.",
+        "Не объявляй всё static только потому, что main является static."
+      ],
+      "question": "Почему a.equals(b) подходит для сравнения названий привычек лучше a == b?",
+      "answer": "equals сравнивает содержимое строк, а == у ссылочных типов проверяет, указывают ли ссылки на один объект."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "ООП: инкапсуляция и интерфейсы",
+    "goal": "Опиши контракт хранилища привычек.",
+    "theory": [
+      "Интерфейс описывает доступные операции. Реализация решает, как их выполнять. Код сервиса зависит от интерфейса, поэтому fake-хранилище можно заменить базой.",
+      "Инкапсуляция помогает защищать инварианты: например, название не бывает пустым. Конструктор принимает обязательные зависимости. Предпочитай композицию наследованию, когда нужна замена поведения.",
+      "Не делай все поля public. Не возвращай изменяемые внутренние коллекции без необходимости. Разделяй DTO, сущность базы и объект бизнес-логики."
+    ],
+    "code": "public interface HabitStore {\n    List<Habit> findAll();\n    Habit save(Habit habit);\n}\n\npublic final class HabitService {\n    private final HabitStore store;\n    public HabitService(HabitStore store) {\n        this.store = store;\n    }\n}",
+    "task": "В конструкторе параметр store. Напиши присваивание полю с тем же именем.",
+    "answers": [
+      "this.store = store;"
+    ],
+    "hint": "Для обращения к полю экземпляра используй this.",
+    "why": "Без this оба имени обозначали бы параметр. Присваивание сохраняет зависимость в объекте.",
+    "quiz": "Какие решения помогают заменять хранилище?",
+    "options": [
+      "Зависеть от HabitStore",
+      "Везде создавать конкретную БД через new",
+      "Передавать зависимость в конструктор",
+      "Использовать fake-реализацию в тесте"
+    ],
+    "correct": [
+      0,
+      2,
+      3
+    ],
+    "practice": "Напиши InMemoryHabitStore. Передай его в HabitService. Добавь create(title), запрети пустое название. Затем создай LoggingHabitStore, который оборачивает другое хранилище и пишет операции в консоль.",
+    "source": "https://dev.java/learn/",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Инкапсуляция защищает правила",
+          "paragraphs": [
+            "Объект отвечает не только за хранение полей, но и за допустимые изменения. Если title всегда должен быть непустым, изменение через публичное поле позволяет обойти правило. private ограничивает доступ, а метод переименования может проверить новый аргумент.",
+            "Геттер нужен для чтения, но сеттер не обязан существовать у каждого поля. Название метода должно отражать действие. Например, rename понятнее общего setData, потому что объясняет бизнес-смысл."
+          ],
+          "code": "public void rename(String title) {\n    if (title == null || title.isBlank()) {\n        throw new IllegalArgumentException(\"Название пустое\");\n    }\n    this.title = title.trim();\n}",
+          "explanation": "Проверка выполняется в одном месте, куда проходят допустимые изменения названия."
+        },
+        {
+          "title": "Интерфейс задаёт обещание",
+          "paragraphs": [
+            "HabitStore описывает, что можно делать с хранилищем. InMemoryHabitStore и DatabaseHabitStore реализуют это обещание разными способами. Сервис не должен знать, используется Map или SQL: ему нужны операции найти и сохранить.",
+            "Интерфейс особенно полезен на границе изменяющейся инфраструктуры. Не нужно создавать интерфейс для каждого маленького класса автоматически — выделяй его, когда контракт действительно помогает замене, тестированию или разделению ответственности."
+          ],
+          "code": "public interface HabitStore {\n    Optional<Habit> findById(long id);\n    Habit save(Habit habit);\n}",
+          "explanation": "Пользователь интерфейса может обработать отсутствие записи, не заглядывая во внутреннее устройство хранилища."
+        },
+        {
+          "title": "Конструктор показывает зависимости",
+          "paragraphs": [
+            "Если сервис не может работать без store, передавай его в конструктор. Тогда невозможно забыть позднее вызвать setter. final у поля показывает, что зависимость не переназначается. this.store различает поле и параметр с одинаковым именем.",
+            "Создание конкретного хранилища внутри сервиса затрудняет замену в тесте. Конструктор делает зависимость видимой и позволяет передать fake. Позже Spring выполнит такое связывание автоматически."
+          ],
+          "code": "public HabitService(HabitStore store) {\n    this.store = Objects.requireNonNull(store);\n}",
+          "explanation": "requireNonNull сразу сообщает об отсутствующей обязательной зависимости, вместо неожиданного сбоя во время бизнес-операции."
+        },
+        {
+          "title": "Композиция и наследование",
+          "paragraphs": [
+            "Наследование выражает отношение «является разновидностью». Композиция выражает «использует». Если нужно добавить логирование к хранилищу, можно обернуть его другим объектом, не наследуясь от конкретной базы.",
+            "Обёртка получает HabitStore, записывает действие и делегирует вызов. Так поведение комбинируется независимо от способа хранения. Проверяй, не создаёт ли наследование скрытую зависимость от деталей родителя."
+          ],
+          "code": "public Habit save(Habit habit) {\n    System.out.println(\"Saving habit \" + habit.id());\n    return delegate.save(habit);\n}",
+          "explanation": "delegate — вложенное хранилище. Логирующая обёртка не повторяет код сохранения."
+        }
+      ],
+      "pitfalls": [
+        "Не возвращай внутреннюю изменяемую коллекцию, если внешний код не должен менять её.",
+        "Не используй наследование только ради повторного использования пары строк.",
+        "Не создавай инфраструктуру внутри бизнес-сервиса без необходимости."
+      ],
+      "question": "Что надо изменить в HabitService при замене памяти на базу, если обе реализации соблюдают HabitStore?",
+      "answer": "Бизнес-логику менять не требуется. Меняется создание и передача конкретной реализации хранилища."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Коллекции и generics",
+    "goal": "Фильтруй данные для админки.",
+    "theory": [
+      "List сохраняет порядок и допускает повторения; Set хранит уникальные элементы; Map связывает ключ и значение. Generics задают тип элементов: List<Habit>.",
+      "ArrayList изменяемый, List.of создаёт неизменяемый список. stream строит цепочку обработки. filter выбирает, map преобразует, toList собирает результат.",
+      "Для небольшой бизнес-операции обычный цикл может быть яснее сложного stream. Не меняй исходную коллекцию во время обхода без безопасного механизма."
+    ],
+    "code": "List<Habit> habits = List.of(\n    new Habit(1L, \"Читать\", true),\n    new Habit(2L, \"Бегать\", false)\n);\nList<String> titles = habits.stream()\n    .filter(Habit::done)\n    .map(Habit::title)\n    .toList();",
+    "task": "Введи тип коллекции Java для соответствия id → Habit (ключ типа Long).",
+    "answers": [
+      "Map<Long, Habit>",
+      "java.util.Map<Long, Habit>"
+    ],
+    "hint": "Нужны пары ключ-значение и два параметра типа.",
+    "why": "Map позволяет найти объект по ключу. Тип ключа здесь Long, а значения — Habit.",
+    "quiz": "Какие утверждения верны?",
+    "options": [
+      "Set подходит для уникальных тегов",
+      "Map хранит пары ключ-значение",
+      "List.of можно свободно расширять через add",
+      "filter отбирает элементы"
+    ],
+    "correct": [
+      0,
+      1,
+      3
+    ],
+    "practice": "Напиши поиск по части названия без учёта регистра, подсчёт done и Map по id. Проверь пустой список и повторяющиеся названия. Сравни stream и цикл по читаемости.",
+    "source": "https://dev.java/learn/",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Выбирай коллекцию под операцию",
+          "paragraphs": [
+            "List нужен для упорядоченного набора с повторениями; Set — для уникальных значений; Map — для поиска по ключу. Если часто находишь привычку по id, Map<Long, Habit> отражает задачу лучше повторного обхода списка.",
+            "Коллекция не заменяет правило уникальности базы. Два объекта с одинаковыми названиями могут быть разными привычками. Уникальность Set определяется equals и hashCode, поэтому важно понимать сравнение своей модели."
+          ],
+          "code": "Map<Long, Habit> byId = new HashMap<>();\nbyId.put(habit.id(), habit);\nHabit found = byId.get(habit.id());",
+          "explanation": "get может вернуть null при отсутствии ключа. Обёртка repository может преобразовать это в Optional."
+        },
+        {
+          "title": "Generics делают типы явными",
+          "paragraphs": [
+            "List<Habit> сообщает компилятору, какие значения находятся в коллекции. Попытка добавить строку станет ошибкой компиляции. В generics используются ссылочные типы: Integer вместо int, Long вместо long.",
+            "Тип коллекции помогает понять цепочку преобразований. Если map возвращает название привычки, результат будет потоком строк, а не привычек. Явно отслеживай тип на каждом этапе — это ускоряет чтение ошибки компилятора."
+          ],
+          "code": "List<String> titles = habits.stream()\n    .map(Habit::title)\n    .toList();",
+          "explanation": "Habit::title — ссылка на метод. Для каждой Habit вызывается title(), и результат собирается в List<String>."
+        },
+        {
+          "title": "Stream — конвейер обработки",
+          "paragraphs": [
+            "filter и map описывают промежуточные преобразования. Терминальная операция, например toList или count, запускает обработку. Stream не является коллекцией для хранения и обычно не предназначен для повторного использования после терминальной операции.",
+            "Избегай скрытых побочных эффектов внутри filter и map. Для формирования новых результатов поток подходит хорошо; для понятного изменения нескольких объектов обычный цикл может быть проще."
+          ],
+          "code": "long completed = habits.stream()\n    .filter(Habit::done)\n    .count();",
+          "explanation": "count возвращает long. filter здесь оставляет только объекты, у которых done() возвращает true."
+        },
+        {
+          "title": "Изменяемость и поиск",
+          "paragraphs": [
+            "List.of создаёт список, который нельзя менять через add. Для изменяемого списка используй ArrayList. Результат Stream.toList также не обещает изменяемую коллекцию. Если нужна изменяемость, создавай её явно.",
+            "Поиск по названию обычно нормализует регистр обеих сторон, например через Locale.ROOT. Проверь пустой запрос, несколько совпадений и отсутствие результата. Не удаляй элементы из списка обычным remove во время for-each обхода."
+          ],
+          "code": "String query = input.toLowerCase(Locale.ROOT);\nList<Habit> matched = habits.stream()\n    .filter(h -> h.title().toLowerCase(Locale.ROOT).contains(query))\n    .toList();",
+          "explanation": "Обе строки приведены к одинаковому регистру. id по-прежнему определяет конкретную запись."
+        }
+      ],
+      "pitfalls": [
+        "Не используй List без параметра типа, когда тип известен.",
+        "Не вызывай add у List.of.",
+        "Не меняй коллекцию структурно во время небезопасного обхода."
+      ],
+      "question": "Почему Map<Long, Habit> использует Long, а не long?",
+      "answer": "Параметры generics должны быть ссылочными типами. Long — объектная оболочка примитивного long."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Ошибки и проверки",
+    "goal": "Отдели неправильный ввод от сбоя программы.",
+    "theory": [
+      "Исключение прерывает обычное выполнение. try/catch нужен там, где можно восстановиться или преобразовать ошибку в понятный ответ. Не скрывай ошибку пустым catch.",
+      "IllegalArgumentException подходит для недопустимого аргумента. На границе API позже используем Bean Validation и HTTP 400. Ошибка отсутствующего id станет HTTP 404.",
+      "Проверяй обычные случаи, границы и неверные входы. Для unit-теста JUnit использует @Test, assertEquals и assertThrows. Не тестируй только успешный пример."
+    ],
+    "code": "public String normalize(String title) {\n    if (title == null || title.isBlank()) {\n        throw new IllegalArgumentException(\"Название пустое\");\n    }\n    return title.trim();\n}\n\n@Test\nvoid rejectsBlankTitle() {\n    assertThrows(IllegalArgumentException.class,\n        () -> service.create(\" \"));\n}",
+    "task": "Какой метод String проверяет, что строка пустая или состоит из пробелов? Введи имя без скобок.",
+    "answers": [
+      "isBlank"
+    ],
+    "hint": "isEmpty проверяет только длину; нужен метод, учитывающий пробелы.",
+    "why": "isBlank вернёт true для \"\", \" \" и строки с табуляцией. До вызова проверь null.",
+    "quiz": "Какие случаи нужно проверить?",
+    "options": [
+      "Пустое название",
+      "Название из пробелов",
+      "Обычное название",
+      "Только заранее известный счастливый путь"
+    ],
+    "correct": [
+      0,
+      1,
+      2
+    ],
+    "practice": "Добавь JUnit в Maven-проект. Напиши тесты create, rename и delete. Убедись, что пустое название отвергается, а удаление неизвестного id сообщает об ошибке. Сначала сломай проверку и посмотри, падает ли тест.",
+    "source": "https://dev.java/learn/",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Ошибка должна иметь понятную причину",
+          "paragraphs": [
+            "Неверный ввод, отсутствие записи и падение базы — разные ситуации. Пользователь может исправить пустое название, но не может исправить SQL-сбой. Разделяя ошибки, ты сможешь показать правильное сообщение и выбрать подходящий HTTP-код позже.",
+            "Не возвращай «успех», если операция не состоялась. Не прячь исключение в пустом catch: тогда вызывающий код продолжит работу с ложным предположением, что данные сохранены."
+          ],
+          "code": "if (title == null || title.isBlank()) {\n    throw new IllegalArgumentException(\"Название не должно быть пустым\");\n}",
+          "explanation": "Условие с || вычисляется коротко: при null правая часть не выполняется, поэтому title.isBlank() не падает."
+        },
+        {
+          "title": "Где использовать try/catch",
+          "paragraphs": [
+            "Лови ошибку там, где можно восстановиться, объяснить её пользователю или преобразовать в другой уровень. Внутренний сервис может выбросить доменное исключение, а web-слой преобразует его в HTTP-ответ.",
+            "Не оборачивай каждую строку в try/catch. Исключение, обработанное слишком рано, теряет контекст. В логах сохраняй техническую причину, а пользователю показывай безопасное и понятное сообщение."
+          ],
+          "code": "try {\n    service.create(title);\n} catch (IllegalArgumentException e) {\n    showValidationError(e.getMessage());\n}",
+          "explanation": "Здесь обработчик умеет отобразить ошибку ввода. Он не делает вид, что привычка создана."
+        },
+        {
+          "title": "Тест описывает ожидаемое поведение",
+          "paragraphs": [
+            "Тест состоит из подготовки, действия и проверки. В нормальном сценарии проверяй результат, в ошибочном — конкретный отказ. Проверка должна показать смысл: возвращено нормализованное название, запись найдена по id, неверный ввод отклонён.",
+            "Тесту не обязательно запускать сервер. Бизнес-сервис с fake-хранилищем можно проверить обычным JUnit. Отдельно позже проверим HTTP-слой и базу."
+          ],
+          "code": "@Test\nvoid trimsTitle() {\n    Habit result = service.create(\"  Читать  \");\n    assertEquals(\"Читать\", result.title());\n}",
+          "explanation": "Ожидаемое значение задано независимо от реализации. Тест проверяет правило нормализации."
+        },
+        {
+          "title": "Проверь границы и качество теста",
+          "paragraphs": [
+            "Для названия проверь null, пустую строку, пробелы, допустимую длину и превышение ограничения. Для id — существующий и неизвестный. Если проверяешь удаление, убедись, что последующий поиск уже не находит запись.",
+            "Временно сломай правило: например, убери проверку пустого ввода. Соответствующий тест обязан упасть. Если он проходит, он не проверял нужное поведение. После проверки верни правило."
+          ],
+          "code": "assertThrows(IllegalArgumentException.class,\n    () -> service.create(\"   \"));",
+          "explanation": "Лямбда откладывает выполнение вызова, чтобы assertThrows мог наблюдать исключение."
+        }
+      ],
+      "pitfalls": [
+        "isEmpty не считает строку из пробелов пустой.",
+        "Не проверяй только то, что метод не выбросил исключение.",
+        "Не ловись общий Exception и не продолжай как при успехе."
+      ],
+      "question": "Чем плох тест, который вызывает create, но ничего не проверяет?",
+      "answer": "Он может пройти даже при неправильном результате или отсутствии сохранения. Нужна проверка наблюдаемого бизнес-поведения."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Админка: страницы и формы",
+    "goal": "Спроектируй интерфейс управления.",
+    "theory": [
+      "Java-код обслуживает веб-страницы, а браузер рисует HTML/CSS. Thymeleaf подставляет данные в серверные шаблоны. Это админка на Java с HTML-интерфейсом.",
+      "GET /admin/habits отображает список. POST из формы создаёт привычку. После изменения перенаправляй пользователя на список — Post/Redirect/Get предотвращает повторную отправку при обновлении.",
+      "На этой неделе подготовь шаблоны; запуск вместе с контроллерами будет на неделе Spring. Админка и Android должны использовать один HabitService и одну базу, а не отдельные наборы данных."
+    ],
+    "code": "<!-- templates/habits.html -->\n<ul>\n  <li th:each=\"habit : ${habits}\" th:text=\"${habit.title}\">Название</li>\n</ul>\n<form th:action=\"@{/admin/habits}\" method=\"post\">\n  <label>Название <input name=\"title\" required maxlength=\"80\"></label>\n  <button type=\"submit\">Добавить</button>\n</form>",
+    "task": "Какой HTTP-метод должна использовать форма создания привычки?",
+    "answers": [
+      "POST"
+    ],
+    "hint": "Создание меняет данные и не должно выполняться через чтение.",
+    "why": "POST отправляет новую команду. После сохранения контроллер возвращает redirect на GET страницы.",
+    "quiz": "Что правильно для админки?",
+    "options": [
+      "Использовать общее хранилище с приложением",
+      "После POST делать redirect",
+      "Удалять данные через GET-ссылку",
+      "Экранировать пользовательский текст"
+    ],
+    "correct": [
+      0,
+      1,
+      3
+    ],
+    "practice": "Подготовь habits.html: таблица id/title/done, форма создания, кнопки удаления и редактирования. Используй th:text для текста. Предусмотри сообщение об ошибке. Пока открой статический макет в браузере; динамика появится на Spring-неделе.",
+    "source": "https://spring.io/guides/gs/serving-web-content/",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Что означает админка на Java",
+          "paragraphs": [
+            "Браузер отображает HTML и CSS. Java-контроллер получает запрос и передаёт данные в шаблон, а Thymeleaf формирует итоговый HTML на сервере. Это обычный способ сделать управленческую веб-страницу без отдельного JavaScript-приложения.",
+            "Админка нужна для тех же привычек, что и Android. У неё другой UI и другие права, но общая бизнес-логика и база. Это предотвращает ситуацию, когда изменение в админке невозможно увидеть в приложении."
+          ],
+          "code": "// Браузер → AdminController → HabitService → HabitRepository\n// Android → REST Controller → HabitService → HabitRepository",
+          "explanation": "Оба входа используют один сервис. Представление ответа различается: HTML для браузера, JSON для приложения."
+        },
+        {
+          "title": "Шаблон получает именованные данные",
+          "paragraphs": [
+            "Model связывает имя habits со списком. В Thymeleaf выражение ${habits} читает эту переменную. th:each повторяет элемент разметки, th:text подставляет текст. Статический текст внутри тега помогает увидеть макет до обработки шаблона.",
+            "th:text экранирует пользовательский текст. Не используй вывод непроверенного HTML для названия, иначе введённая строка может стать частью разметки."
+          ],
+          "code": "<li th:each=\"habit : ${habits}\" th:text=\"${habit.title}\">Привычка</li>",
+          "explanation": "Для каждой Habit создаётся элемент списка с её названием. Java-свойства доступны через соответствующие методы чтения."
+        },
+        {
+          "title": "Форма — команда серверу",
+          "paragraphs": [
+            "input name задаёт имя параметра запроса, а label объясняет поле пользователю. method=\"post\" отправляет изменение. required помогает в браузере, но сервер обязан проверять ввод независимо: HTTP-запрос можно отправить без формы.",
+            "После успешного POST сделай redirect на страницу списка. Если вернуть HTML непосредственно из POST, обновление страницы может повторить команду. При ошибке нужно показать форму с сообщением и сохранить введённое значение."
+          ],
+          "code": "<form th:action=\"@{/admin/habits}\" method=\"post\">\n    <label>Название <input name=\"title\" required></label>\n    <button type=\"submit\">Добавить</button>\n</form>",
+          "explanation": "Адрес th:action обрабатывается Thymeleaf. В будущей защищённой конфигурации форма должна участвовать в CSRF-защите."
+        },
+        {
+          "title": "Спроектируй состояния страницы",
+          "paragraphs": [
+            "Список должен объяснять пустое состояние и показывать действия для конкретной записи. Кнопки изменения используют id. Ошибка сохранения появляется рядом с полем, ошибка доступа — на отдельном понятном экране.",
+            "Пока Spring не подключён, можно готовить HTML-макет, но обычное открытие файла не выполнит th:each. Динамические данные появятся, когда сервер обработает шаблон. Сначала убедись, что расположение и формы понятны."
+          ],
+          "code": "// Минимум страницы:\n// заголовок → список или пустое состояние → форма\n// у каждой строки: редактировать, отметить, удалить",
+          "explanation": "Не превращай GET-ссылку в удаление: GET должен оставаться безопасной операцией чтения."
+        }
+      ],
+      "pitfalls": [
+        "Не считай required достаточной серверной валидацией.",
+        "Не используй GET для создания или удаления.",
+        "Не ожидaй выполнения Thymeleaf при открытии HTML как локального файла."
+      ],
+      "question": "Почему Android и админка должны иметь один сервис, хотя их контроллеры разные?",
+      "answer": "Контроллеры обслуживают разные способы общения. Общий сервис обеспечивает одинаковые правила изменения одних и тех же данных."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Java-проект: слои и сборка",
+    "goal": "Подготовь сервис для будущего API.",
+    "theory": [
+      "Раздели код по ответственности: domain, service, repository и web. Сервис отвечает за правила, repository — за хранение, controller — за транспорт.",
+      "Maven описывает зависимости и сборку в pom.xml. Wrapper ./mvnw делает запуск воспроизводимым. Не коммить пароли, build output и локальные настройки IDE.",
+      "Операция обновления должна явно обрабатывать отсутствующий id. Используй Optional для возможного отсутствия результата, но не как универсальную замену всем полям."
+    ],
+    "code": "public Habit requireHabit(long id) {\n    return store.findById(id)\n        .orElseThrow(() -> new IllegalArgumentException(\"Не найдено\"));\n}\n\n// Контракт repository\nOptional<Habit> findById(long id);",
+    "task": "Допиши имя метода Optional, который возвращает значение или выбрасывает исключение от supplier.",
+    "answers": [
+      "orElseThrow"
+    ],
+    "hint": "Название начинается с orElse и говорит о выбрасывании ошибки.",
+    "why": "orElseThrow задаёт поведение для отсутствующего значения и избавляет от неявного null.",
+    "quiz": "Кто отвечает за бизнес-правила?",
+    "options": [
+      "Service",
+      "HTML-шаблон",
+      "Repository для всех правил",
+      "Controller для всех правил"
+    ],
+    "correct": [
+      0
+    ],
+    "practice": "Собери Maven-проект с CRUD-сервисом и InMemoryHabitStore. Все операции должны работать без веб-сервера. Напиши README с командами запуска и тестов. Проверь, что тесты проходят через ./mvnw test.",
+    "source": "https://dev.java/learn/",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Слои помогают понимать изменение",
+          "paragraphs": [
+            "Controller отвечает за входной запрос и формат ответа. Service — за правила операции. Repository — за доступ к данным. Domain содержит смысловые объекты. Такое разделение позволяет заменить транспорт или хранилище без переписывания правил.",
+            "Не надо усложнять маленькую программу десятками абстракций. Достаточно видеть границы: метод create не должен одновременно парсить HTML, подключаться к SQL и рисовать кнопку."
+          ],
+          "code": "// web/       HTTP и формы\n// service/   создание, изменение, проверки\n// repository/ хранение и поиск\n// domain/    модели",
+          "explanation": "Пакеты объясняют ответственность. Главный Spring-класс позднее должен находиться выше этих подпакетов."
+        },
+        {
+          "title": "Maven и воспроизводимая сборка",
+          "paragraphs": [
+            "pom.xml описывает зависимости и настройки сборки. Maven разрешает их и запускает задачи жизненного цикла. test выполняет тесты, package формирует артефакт. Maven Wrapper позволяет проекту использовать выбранную версию Maven.",
+            "IDE может запускать код в своих настройках, но проект должен проверяться обычной командой. Тогда другой разработчик получит тот же способ сборки, а автоматическая проверка не зависит от ручных действий."
+          ],
+          "code": "./mvnw test\n./mvnw package",
+          "explanation": "В Windows используются mvnw.cmd. Wrapper-файлы входят в исходники, а папка target — результат сборки."
+        },
+        {
+          "title": "Отсутствие результата и Optional",
+          "paragraphs": [
+            "Поиск по id иногда ничего не находит. Optional<Habit> выражает это явно. isPresent/get допустимы, но часто удобнее map, orElse или orElseThrow. Последний задаёт отказ для обязательной записи.",
+            "Optional чаще полезен как возвращаемый тип поиска. Не делай Optional каждой переменной или каждого поля автоматически. Важно не скрыть смысл: nullable-вход, отсутствие записи и ошибка хранения — разные случаи."
+          ],
+          "code": "Habit habit = store.findById(id)\n    .orElseThrow(() -> new HabitNotFoundException(id));",
+          "explanation": "Supplier создаёт исключение только при отсутствии результата. Далее код может работать с обязательной Habit."
+        },
+        {
+          "title": "Обновление должно иметь ясный контракт",
+          "paragraphs": [
+            "Сначала найди существующую запись, затем проверь вход и измени данные. Не превращай update неизвестного id в неявное создание, если договорились возвращать ошибку. После изменения верни фактическое сохранённое состояние.",
+            "Тесты должны проверять, что неправильный ввод не портит старую запись. README описывает запуск, тесты и структуру. Секреты и локальный build output в репозиторий не помещаются."
+          ],
+          "code": "// update(id, request):\n// 1. Найти запись или сообщить «не найдено».\n// 2. Проверить новое название.\n// 3. Применить изменения.\n// 4. Сохранить и вернуть результат.",
+          "explanation": "Явный порядок помогает избежать частичного изменения объекта до завершения проверки."
+        }
+      ],
+      "pitfalls": [
+        "Не вызывай Optional.get без обработки отсутствия.",
+        "Не скрывай неуспешный update как успешное создание.",
+        "Не полагайся только на ручной запуск в IDE."
+      ],
+      "question": "Что должен сделать update, если id отсутствует в нашей системе?",
+      "answer": "Вернуть понятную ошибку отсутствующего ресурса. Создание является отдельной операцией."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Java-босс: законченная админка",
+    "goal": "Проверь готовность Java-части.",
+    "theory": [
+      "Сегодня не добавляем новые конструкции: соединяем модель, хранилище, сервис, проверки и шаблоны. Цель — самостоятельный код без копирования каждой строки.",
+      "Контракт общего API: GET/POST /api/habits; PUT/DELETE /api/habits/{id}. DTO: id, title, done. title — 1–80 символов после нормализации. id выдаёт сервер.",
+      "Прогони сценарии: создать, переименовать, отметить, удалить; проверить неизвестный id и пустое название. Веб-запуск админки подключим после Spring Initializr."
+    ],
+    "code": "public record HabitRequest(String title, boolean done) {}\npublic record HabitResponse(long id, String title, boolean done) {}\n\n// Общий сервис для обоих интерфейсов\nHabitResponse create(HabitRequest request);\nHabitResponse update(long id, HabitRequest request);\nvoid delete(long id);",
+    "task": "Кто должен генерировать устойчивый id новой привычки в нашей архитектуре?",
+    "answers": [
+      "сервер",
+      "server",
+      "backend",
+      "бэкенд"
+    ],
+    "hint": "Все клиенты должны видеть один и тот же идентификатор.",
+    "why": "Сервер централизованно хранит данные и выдаёт id. Клиенты передают id для дальнейших операций.",
+    "quiz": "Какие условия показывают готовность?",
+    "options": [
+      "CRUD работает через сервис",
+      "Тесты неверного ввода проходят",
+      "Android и админка имеют разные схемы данных",
+      "Контракт DTO согласован"
+    ],
+    "correct": [
+      0,
+      1,
+      3
+    ],
+    "practice": "За 45 минут без готового образца напиши метод update и 3 теста: успех, пустое название, неизвестный id. Проверь шаблон формы редактирования. Запиши вслух, как запрос пройдёт через controller/service/repository.",
+    "source": "https://dev.java/learn/",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Фиксируем договор между частями",
+          "paragraphs": [
+            "Контракт API — договор о маршрутах, методах, полях и кодах ответа. Android и админка должны понимать id, title и done одинаково. title — строка, done — boolean, id выдаёт сервер и дальше клиенты используют его для конкретной записи.",
+            "Если клиенты по-разному называют одно поле или не согласны о типе id, соединение сломается даже при корректном коде каждой части. Запиши контракт до интеграции и изменяй его осознанно."
+          ],
+          "code": "{ \"id\": 12, \"title\": \"Читать\", \"done\": false }",
+          "explanation": "JSON — формат обмена. В Java DTO может быть record, в Kotlin — data class с теми же смысловыми полями."
+        },
+        {
+          "title": "DTO отделяет ввод от ответа",
+          "paragraphs": [
+            "При создании клиент не должен самостоятельно назначать id сервера. HabitRequest содержит title и done, HabitResponse — ещё и id. В сущности базы могут быть дополнительные внутренние поля, которые не нужно отдавать клиенту.",
+            "Два отдельных DTO помогают ограничить возможные изменения. Например, административный внутренний флаг нельзя случайно изменить, прислав его в публичном запросе, если его нет в входном контракте."
+          ],
+          "code": "public record HabitRequest(String title, boolean done) {}\npublic record HabitResponse(long id, String title, boolean done) {}",
+          "explanation": "Схема запроса и схема ответа связаны, но не обязаны совпадать."
+        },
+        {
+          "title": "Проверяем бизнес-логику до HTTP",
+          "paragraphs": [
+            "Сначала убедись, что список, создание, update и delete работают через сервис. Неверное название должно отвергаться, неизвестный id — давать явную ошибку. В тестах вызывай сервис напрямую с InMemoryHabitStore.",
+            "Веб-слой не исправит неправильную бизнес-логику. Он лишь переведёт её результат в HTML или JSON. Поэтому сегодня важно самостоятельно написать update и убедиться, что правила понятны без контроллера."
+          ],
+          "code": "// Сценарий теста:\n// create(\"Читать\") → id\n// update(id, \"Читать 20 минут\", true)\n// find(id) → новое название и done=true\n// delete(id) → find(id) отсутствует",
+          "explanation": "После каждого изменения проверяй хранилище, а не только возвращённый объект."
+        },
+        {
+          "title": "Что означает законченный этап",
+          "paragraphs": [
+            "Зафиксируй код, который способен выполнить все команды без UI. Подготовь шаблоны и README. Объясни, где живёт правило непустого названия и как обе будущие точки входа вызывают его.",
+            "Если без образца не получается написать метод целиком, уменьшай шаг: сначала сигнатура, затем поиск, проверка, изменение, результат. Повторение одной операции с другими данными полезнее бездумного копирования большого проекта."
+          ],
+          "code": "// Самостоятельное изменение:\n// добавь ограничение длины 80 символов\n// и тесты для 80 и 81 символа.",
+          "explanation": "Пороговые тесты показывают, что правило не только написано, но и правильно понято."
+        }
+      ],
+      "pitfalls": [
+        "Не принимай серверный id как произвольное поле формы создания.",
+        "Не проверяй только возвращённое DTO: проверь фактическое сохранение.",
+        "Не делай отдельные правила названия в каждом контроллере."
+      ],
+      "question": "Почему входной HabitRequest может не содержать id, а HabitResponse должен его содержать?",
+      "answer": "При создании id назначает сервер. Ответ сообщает фактический id, необходимый для следующих операций."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Spring Boot: первый сервер",
+    "goal": "Запусти API и админку в одном проекте.",
+    "theory": [
+      "На start.spring.io выбери Maven, Java, стабильную версию Spring Boot и JDK 21, если он доступен в списке совместимых. Добавь Spring Web, Thymeleaf, Validation, Spring Data JPA, H2 и Spring Security.",
+      "@SpringBootApplication включает конфигурацию и поиск компонентов. Главный класс размести в корневом пакете, например com.example.habits, а остальные — в его подпакетах.",
+      "Spring создаёт bean-компоненты и передаёт зависимости. Используй конструктор. Запусти ./mvnw spring-boot:run. С Security по умолчанию запросы могут требовать входа: на шестой день явно настроим доступ."
+    ],
+    "code": "@SpringBootApplication\npublic class HabitsApplication {\n    public static void main(String[] args) {\n        SpringApplication.run(HabitsApplication.class, args);\n    }\n}\n\n@Service\npublic class HabitService {\n    private final HabitRepository repository;\n    public HabitService(HabitRepository repository) {\n        this.repository = repository;\n    }\n}",
+    "task": "Какой аннотацией помечаем класс бизнес-сервиса для регистрации в Spring?",
+    "answers": [
+      "@Service",
+      "Service"
+    ],
+    "hint": "Название соответствует роли сервисного слоя.",
+    "why": "@Service — специализация компонента. Spring обнаруживает его в сканируемом пакете.",
+    "quiz": "Какие зависимости нужны нашему проекту?",
+    "options": [
+      "Spring Web",
+      "Thymeleaf",
+      "Spring Data JPA",
+      "Ничего: Java сама реализует Spring"
+    ],
+    "correct": [
+      0,
+      1,
+      2
+    ],
+    "practice": "Сгенерируй проект и запусти. Перенеси Java-сервис. Добавь GET /api/health с ответом {\"status\":\"ok\"}. Если появляется 401, проверь настройки Security и вход; не отключай защиту без понимания.",
+    "source": "https://spring.io/guides/gs/spring-boot/",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Что берёт на себя Spring Boot",
+          "paragraphs": [
+            "Обычной Java-программе пришлось бы вручную связать сервер, HTTP-маршруты, JSON, базу и настройки. Spring Boot упрощает запуск за счёт зависимостей starter и автоконфигурации. Это не отменяет понимание HTTP и собственных правил сервиса.",
+            "Spring Initializr генерирует основу проекта с согласованными версиями. Выбирай стабильный выпуск, совместимый с установленным JDK. После распаковки сначала запусти неизменённый проект, затем переносить свои классы проще."
+          ],
+          "code": "./mvnw spring-boot:run",
+          "explanation": "В логах должен быть успешный запуск сервера. Ошибка сборки и ответ HTTP 401 — разные проблемы."
+        },
+        {
+          "title": "Контейнер и bean-компоненты",
+          "paragraphs": [
+            "Spring управляет объектами, которые зарегистрированы как компоненты: service, controller, repository и другие bean. Когда HabitService требует HabitRepository в конструкторе, контейнер находит подходящую зависимость и создаёт сервис.",
+            "Если сделать new HabitService вручную вне контейнера, это будет обычный Java-объект. Аннотации не превращают любой экземпляр в автоматически управляемый. Не смешивай два способа создания без необходимости."
+          ],
+          "code": "@Service\npublic class HabitService {\n    private final HabitRepository repository;\n    public HabitService(HabitRepository repository) {\n        this.repository = repository;\n    }\n}",
+          "explanation": "Один конструктор с необходимыми зависимостями делает связывание явным и удобным для unit-тестов."
+        },
+        {
+          "title": "Пакеты и автоконфигурация",
+          "paragraphs": [
+            "@SpringBootApplication включает конфигурацию, поиск компонентов и другие механизмы запуска. Компоненты по умолчанию ищутся в пакете главного класса и ниже. Если контроллер находится в несвязанном соседнем пакете, он может не обнаружиться.",
+            "application.properties или application.yml задают параметры, например порт и адрес базы. Секреты передаются извне. Установка зависимости Security включает защиту по умолчанию: появившийся 401 не означает, что контроллер вообще не работает."
+          ],
+          "code": "// com.example.habits.HabitsApplication\n// com.example.habits.web.HabitController\n// com.example.habits.service.HabitService",
+          "explanation": "Общий корень com.example.habits помогает обнаружить необходимые компоненты."
+        },
+        {
+          "title": "Первый запуск и диагностика",
+          "paragraphs": [
+            "Начни с маленького /api/health. Проверь, что приложение запускается, запрос доходит, а тело ответа имеет ожидаемый формат. При 404 сравни маршрут, при 401 — авторизацию, при 500 — серверные логи.",
+            "Не отключай всю защиту, чтобы избавиться от непонятной ошибки. Позже настроим явные правила для служебного маршрута, API и админки. Сегодня нужно понять, какой слой отказывает."
+          ],
+          "code": "@GetMapping(\"/api/health\")\npublic Map<String, String> health() {\n    return Map.of(\"status\", \"ok\");\n}",
+          "explanation": "Этот метод находится внутри @RestController. Доступ также зависит от правил Security."
+        }
+      ],
+      "pitfalls": [
+        "Не размещай главный класс ниже контроллеров по дереву пакетов без настройки сканирования.",
+        "Не путай 401 с ошибкой запуска сервера.",
+        "Не создавай управляемые сервисы вручную внутри контроллера."
+      ],
+      "question": "Как Spring понимает, что передать в конструктор HabitService?",
+      "answer": "Он ищет зарегистрированный bean подходящего типа. Если его нет или кандидатов несколько без уточнения, запуск сообщит об ошибке связывания."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "REST: контракт и контроллеры",
+    "goal": "Реализуй HTTP-операции привычек.",
+    "theory": [
+      "@RestController возвращает данные ответа, обычно JSON. @Controller с Thymeleaf возвращает имя HTML-шаблона. Это два входа в общий сервис.",
+      "@GetMapping читает, @PostMapping создаёт, @PutMapping обновляет, @DeleteMapping удаляет. @PathVariable связывает id из пути, @RequestBody десериализует JSON.",
+      "Создание возвращает 201, успешное удаление — 204, неверный ввод — 400, отсутствующий ресурс — 404. В контроллере не размещай SQL и бизнес-правила."
+    ],
+    "code": "@RestController\n@RequestMapping(\"/api/habits\")\npublic class HabitController {\n    private final HabitService service;\n    public HabitController(HabitService service) { this.service = service; }\n\n    @GetMapping\n    public List<HabitResponse> list() { return service.list(); }\n\n    @PostMapping\n    @ResponseStatus(HttpStatus.CREATED)\n    public HabitResponse create(@Valid @RequestBody HabitRequest request) {\n        return service.create(request);\n    }\n}",
+    "task": "Напиши аннотацию для DELETE по адресу /{id} внутри контроллера.",
+    "answers": [
+      "@DeleteMapping(\"/{id}\")"
+    ],
+    "hint": "Используй DeleteMapping с шаблоном пути.",
+    "why": "Аннотация выбирает метод HTTP и маршрут. Сам id затем принимается через @PathVariable.",
+    "quiz": "Какие коды соответствуют ситуации?",
+    "options": [
+      "201 — ресурс создан",
+      "404 — ресурс не найден",
+      "400 — неверные данные",
+      "500 — любое пустое название"
+    ],
+    "correct": [
+      0,
+      1,
+      2
+    ],
+    "practice": "Реализуй четыре маршрута. Через curl или HTTP-клиент создай привычку, получи список, измени done, удали. Сохрани запросы в README. PUT неизвестного id должен дать 404, а не случайно создать объект.",
+    "source": "https://spring.io/guides/gs/rest-service/",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Запрос состоит из нескольких частей",
+          "paragraphs": [
+            "HTTP-метод выражает действие, путь — ресурс, заголовки — метаданные и авторизацию, тело — передаваемые данные. GET /api/habits читает список. POST на тот же путь создаёт запись. PUT /api/habits/12 обновляет конкретную запись.",
+            "В нашем контракте PUT принимает полное изменяемое представление title и done. Если нужно менять только часть полей, для этого можно отдельно определить PATCH. Не считай, что любое значение после слеша автоматически станет параметром метода."
+          ],
+          "code": "GET /api/habits\nPOST /api/habits\nPUT /api/habits/12\nDELETE /api/habits/12",
+          "explanation": "Все маршруты отражают одну коллекцию и конкретные элементы. Контракт должен быть согласован с Retrofit."
+        },
+        {
+          "title": "Аннотации связывают HTTP и Java",
+          "paragraphs": [
+            "@RequestMapping задаёт общий префикс контроллера. @GetMapping и другие аннотации задают метод и дополнительный путь. @PathVariable получает значение из пути; @RequestBody читает JSON и преобразует его в DTO.",
+            "@RestController отправляет возвращаемый объект в тело ответа. @Controller с шаблонами обычно возвращает имя представления. Если перепутать роли, можно получить имя шаблона вместо JSON или строку вместо страницы."
+          ],
+          "code": "@PutMapping(\"/{id}\")\npublic HabitResponse update(\n    @PathVariable(\"id\") long id,\n    @Valid @RequestBody HabitRequest request\n) {\n    return service.update(id, request);\n}",
+          "explanation": "Контроллер извлекает входные данные и делегирует операцию. Он не содержит собственную реализацию хранения."
+        },
+        {
+          "title": "Коды ответа являются частью договора",
+          "paragraphs": [
+            "200 означает успешный ответ с данными. 201 подходит для создания, 204 — для успеха без тела. 400 сигнализирует о неверном запросе, 404 — об отсутствии ресурса. 500 — неожиданная серверная проблема.",
+            "Для 204 клиент не должен ожидать JSON. При создании полезно вернуть объект с id; при ошибке — стабильное сообщение и код. Успех HTTP не обязан означать, что тело содержит именно тот формат, который ожидает приложение: это тоже нужно проверять."
+          ],
+          "code": "@DeleteMapping(\"/{id}\")\n@ResponseStatus(HttpStatus.NO_CONTENT)\npublic void delete(@PathVariable(\"id\") long id) {\n    service.delete(id);\n}",
+          "explanation": "Нет тела ответа — поэтому метод void. Ошибка отсутствия записи должна быть преобразована отдельно."
+        },
+        {
+          "title": "Проверка без Android",
+          "paragraphs": [
+            "HTTP-клиент или curl помогает отделить проблему сервера от проблемы приложения. Сначала проверь API напрямую, потом подключай Retrofit. Для JSON передавай Content-Type: application/json и правильные типы значений.",
+            "Если название в запросе отсутствует или done передан строкой вместо boolean, обработка может завершиться до вызова бизнес-сервиса. Это ошибка входного формата, а не потеря записи в базе."
+          ],
+          "code": "curl -X POST http://localhost:8080/api/habits \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"title\":\"Читать\",\"done\":false}'",
+          "explanation": "При включённой защите добавь настроенную авторизацию. Тестируй и корректный запрос, и отказ с неверным вводом."
+        }
+      ],
+      "pitfalls": [
+        "Не вызывай изменение данных через GET.",
+        "Не десериализуй JSON из успешного 204.",
+        "Не используй 500 вместо понятной ошибки валидации."
+      ],
+      "question": "Почему Retrofit может падать при разборе ответа, хотя сервер вернул 204?",
+      "answer": "204 не содержит тело. Клиент должен ожидать завершение без DTO, а не пытаться прочитать JSON-объект."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "JPA: база и репозиторий",
+    "goal": "Сохраняй привычки между перезапусками.",
+    "theory": [
+      "@Entity описывает сущность базы. @Id отмечает ключ, @GeneratedValue делегирует генерацию id. JPA-сущности нужен конструктор без аргументов; record не используй как обычную JPA-сущность.",
+      "JpaRepository предоставляет findAll, findById, save и delete. Long соответствует типу ключа. DTO отделяет публичный API от схемы базы.",
+      "Для учебного сохранения используй файловую H2: spring.datasource.url=jdbc:h2:file:./data/habits. update допустим в учебной среде; в рабочем проекте применяй миграции Flyway/Liquibase."
+    ],
+    "code": "@Entity\npublic class HabitEntity {\n    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long id;\n    private String title;\n    private boolean done;\n    protected HabitEntity() {}\n    // Добавь конструктор, getters и методы изменения\n}\n\npublic interface HabitRepository\n    extends JpaRepository<HabitEntity, Long> {}",
+    "task": "Напиши объявление интерфейса HabitRepository для HabitEntity с ключом Long.",
+    "answers": [
+      "public interface HabitRepository extends JpaRepository<HabitEntity, Long> {}"
+    ],
+    "hint": "Интерфейс extends JpaRepository с двумя типами.",
+    "why": "Spring Data создаёт реализацию во время запуска. Типы описывают сущность и ключ.",
+    "quiz": "Что верно для JPA?",
+    "options": [
+      "Сущности нужен id",
+      "DTO обязательно должен быть сущностью",
+      "Файловая H2 сохраняет данные на диске",
+      "Репозиторий может вернуть Optional"
+    ],
+    "correct": [
+      0,
+      2,
+      3
+    ],
+    "practice": "Подключи H2 в файл. Создай привычку, останови сервер и запусти снова: запись должна остаться. Перенеси update в @Transactional метод. Убедись, что Android и админка видят те же id.",
+    "source": "https://spring.io/guides/gs/accessing-data-jpa/",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Сущность и таблица",
+          "paragraphs": [
+            "JPA связывает Java-объекты с реляционными данными. @Entity помечает класс сущности, @Id — ключ. Поля связываются со столбцами с учётом настроек отображения. Идентификатор отличает запись от другой с тем же названием.",
+            "JPA-сущность и DTO имеют разные роли. Сущность участвует в хранении и жизненном цикле persistence context, DTO — в обмене с клиентом. Не отдавай внутреннюю сущность напрямую только потому, что это кажется короче."
+          ],
+          "code": "@Id\n@GeneratedValue(strategy = GenerationType.IDENTITY)\nprivate Long id;",
+          "explanation": "До сохранения id может быть null. После сохранения база назначает значение. Long позволяет выразить такое отсутствие."
+        },
+        {
+          "title": "Что предоставляет JpaRepository",
+          "paragraphs": [
+            "Интерфейс JpaRepository<HabitEntity, Long> описывает тип сущности и ключа. Spring Data предоставляет реализацию стандартных операций. findById возвращает Optional, findAll — список, save сохраняет состояние по правилам JPA.",
+            "save не заменяет бизнес-проверки и не определяет сам по себе, что update неизвестного id должен делать. Сервис сначала проверяет контракт операции. Не злоупотребляй загрузкой всех записей, когда позже понадобится пагинация."
+          ],
+          "code": "public interface HabitRepository\n        extends JpaRepository<HabitEntity, Long> {}",
+          "explanation": "Не нужно вручную писать класс для стандартной реализации этого интерфейса."
+        },
+        {
+          "title": "Транзакция объединяет изменения",
+          "paragraphs": [
+            "Транзакция задаёт границу операции с базой. Если внутри обновления несколько связанных действий, они должны завершиться согласованно. @Transactional на сервисном методе помогает объединить работу.",
+            "Управляемая сущность отслеживается persistence context, и изменения могут быть записаны при завершении транзакции. Не полагайся на это без понимания границ. При внутреннем вызове одного метода другим в том же объекте обычный proxy-механизм @Transactional может не сработать как внешний вызов."
+          ],
+          "code": "@Transactional\npublic HabitResponse update(long id, HabitRequest request) {\n    HabitEntity entity = requireEntity(id);\n    entity.rename(request.title().trim());\n    entity.setDone(request.done());\n    return toResponse(entity);\n}",
+          "explanation": "Название сначала должно пройти проверку. Метод вызывается через управляемый Spring-сервис."
+        },
+        {
+          "title": "Память, файл и миграции",
+          "paragraphs": [
+            "H2 в памяти теряет данные после остановки. Файловая H2 сохраняет их на диске. Для учебного проекта это позволяет проверить сохранение без отдельной установки базы. Укажи понятный путь и не коммить рабочие файлы базы.",
+            "hibernate.ddl-auto=update удобно для первых экспериментов, но не даёт управляемой истории изменений схемы. В реальной системе изменения таблиц фиксируют миграциями. Сервер и оба интерфейса должны обращаться к одной конфигурации хранилища."
+          ],
+          "code": "spring.datasource.url=jdbc:h2:file:./data/habits\nspring.jpa.hibernate.ddl-auto=update",
+          "explanation": "Проверь: создать запись → перезапустить сервер → получить запись. Учебная настройка update не является стратегией production-миграций."
+        }
+      ],
+      "pitfalls": [
+        "Не используй обычный record как JPA-сущность курса.",
+        "Не путай in-memory H2 с файловой.",
+        "Не отдавай наружу внутренние поля базы без выбора публичного DTO."
+      ],
+      "question": "Почему после перезапуска могли исчезнуть все привычки, хотя save работал?",
+      "answer": "Вероятно, использовалась in-memory база или менялся путь файловой базы. save сохраняет в выбранное хранилище, но не делает его автоматически постоянным."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Валидация и ошибки API",
+    "goal": "Сделай ошибки предсказуемыми для клиента.",
+    "theory": [
+      "Bean Validation проверяет DTO: @NotBlank запрещает пустое значение, @Size(max = 80) ограничивает длину. @Valid включает проверку входного аргумента контроллера.",
+      "@RestControllerAdvice обрабатывает исключения централизованно. Не отправляй stack trace и пароли клиенту. Для ошибок используй понятный JSON со стабильным кодом и сообщением.",
+      "В Android разделяй ошибки сети, неверного ввода и сервера. Повтор POST после сетевого таймаута может создать дубликат: для реальной системы нужен продуманный механизм идемпотентности."
+    ],
+    "code": "public record HabitRequest(\n    @NotBlank @Size(max = 80) String title,\n    boolean done\n) {}\n\n@RestControllerAdvice\nclass ApiErrors {\n    @ExceptionHandler(HabitNotFoundException.class)\n    ResponseEntity<Map<String, String>> missing() {\n        return ResponseEntity.status(404)\n            .body(Map.of(\"code\", \"NOT_FOUND\", \"message\", \"Привычка не найдена\"));\n    }\n}",
+    "task": "Какая аннотация запрещает null, пустую строку и строку из пробелов?",
+    "answers": [
+      "@NotBlank",
+      "NotBlank"
+    ],
+    "hint": "Аннотация содержит слово Blank.",
+    "why": "@NotNull запрещает только null. @NotEmpty также запрещает пустую строку, но пробелы проверяет @NotBlank.",
+    "quiz": "Что верно?",
+    "options": [
+      "@Valid включает проверку DTO",
+      "Stack trace нужно отправлять каждому пользователю",
+      "404 подходит для неизвестного id",
+      "Ошибки должны иметь понятный формат"
+    ],
+    "correct": [
+      0,
+      2,
+      3
+    ],
+    "practice": "Отправь title=null, пустую строку, пробелы и 81 символ. Все должны дать 400. В Android покажи сообщение рядом с полем. Добавь обработку 404 при удалении уже удалённой записи.",
+    "source": "https://spring.io/guides/",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Проверяем данные на границе",
+          "paragraphs": [
+            "Валидация входного DTO позволяет отвергнуть неправильный запрос до бизнес-операции. @NotBlank запрещает null и пустое или пробельное название, @Size задаёт ограничение длины. @Valid на параметре контроллера включает такую проверку.",
+            "Проверка формы в браузере и Android полезна для быстрого ответа пользователю, но сервер всё равно проверяет вход. Клиент может иметь старую версию, ошибку или быть заменён прямым HTTP-запросом."
+          ],
+          "code": "public record HabitRequest(\n    @NotBlank @Size(max = 80) String title,\n    boolean done\n) {}",
+          "explanation": "Ограничения дополняют друг друга. @Size самостоятельно не выражает правило непустого названия."
+        },
+        {
+          "title": "Нормализация и бизнес-правила",
+          "paragraphs": [
+            "trim убирает пробелы по краям; правило длины надо согласовать с моментом нормализации. Например, 80 полезных символов с окружающими пробелами могут не пройти проверку сырой строки, если проверяешь длину до trim.",
+            "Запиши единое правило и применяй его последовательно. Бизнес-сервис должен защищать важные инварианты и при прямом вызове из админки, даже если REST DTO уже проверили. Не создавай противоречащие друг другу проверки."
+          ],
+          "code": "String normalized = request.title().trim();\n// Дальнейшие правила применяются\n// к тому значению, которое действительно сохраняется.",
+          "explanation": "Учебный договор нужно уточнить: ограничение относится к сырому вводу или нормализованному названию."
+        },
+        {
+          "title": "Централизованный формат ошибок",
+          "paragraphs": [
+            "@RestControllerAdvice помогает преобразовать исключения в ответы. Клиенту нужен стабильный код и понятное сообщение. Для отсутствующей записи используется 404, для неверного ввода — 400. Не отправляй стек исключения пользователю.",
+            "В логе разработчик видит техническую причину, а UI показывает, что можно сделать дальше. Сообщение «попробуй позже» не подходит для пустого названия: здесь пользователь должен исправить поле."
+          ],
+          "code": "{ \"code\": \"INVALID_TITLE\", \"message\": \"Введи название до 80 символов\" }",
+          "explanation": "Код предназначен для логики клиента, сообщение — для человека. Не привязывай обработку только к точному русскому тексту."
+        },
+        {
+          "title": "Ошибки клиента и безопасный повтор",
+          "paragraphs": [
+            "Android должен различать отсутствие сети, неверный ввод и серверный сбой. Для ошибки ввода сохрани форму и подсвети поле. Для временного сбоя предложи повторить. Не показывай бесконечную загрузку после исключения.",
+            "Повтор создания после таймаута может создать вторую запись: запрос мог дойти, а ответ — потеряться. Для рабочего продукта нужен договор идемпотентности. В учебном сценарии хотя бы не запускай POST повторно автоматически без понимания результата."
+          ],
+          "code": "// Проверки:\n// null, \"\", \"   \", длина 80, длина 81\n// неизвестный id → 404\n// сеть отключена → понятное состояние ошибки",
+          "explanation": "Проверка крайних случаев помогает обнаружить несовпадение правил между UI и сервером."
+        }
+      ],
+      "pitfalls": [
+        "Не считай клиентскую проверку защитой сервера.",
+        "Не отправляй stack trace и внутренние сведения о базе в JSON.",
+        "Не повторяй изменение данных бесконтрольно при любой ошибке сети."
+      ],
+      "question": "Почему после сетевого таймаута опасно автоматически повторять POST создания?",
+      "answer": "Сервер мог уже сохранить запись, но клиент не получил ответ. Повтор создаст дубликат без отдельного механизма идемпотентности."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Админка на Java + Thymeleaf",
+    "goal": "Подключи серверные формы к общему сервису.",
+    "theory": [
+      "@Controller возвращает имя шаблона. Model переносит данные в HTML. @RequestParam получает поле формы. Для списка положи habits в Model и верни \"habits\".",
+      "Thymeleaf th:text экранирует пользовательский текст. Формы изменений используют POST; для удаления в админке можно сделать POST /admin/habits/{id}/delete.",
+      "Сервис остаётся общим для API и админки. Если действие выполнено в браузере, приложение получит результат при следующей загрузке. Это синхронизация через сервер, а не автоматически real-time."
+    ],
+    "code": "@Controller\n@RequestMapping(\"/admin/habits\")\nclass AdminController {\n    private final HabitService service;\n    AdminController(HabitService service) { this.service = service; }\n\n    @GetMapping\n    String list(Model model) {\n        model.addAttribute(\"habits\", service.list());\n        return \"habits\";\n    }\n\n    @PostMapping\n    String create(@RequestParam String title) {\n        service.create(new HabitRequest(title, false));\n        return \"redirect:/admin/habits\";\n    }\n}",
+    "task": "Какую строку вернёт контроллер после создания, чтобы перенаправить на /admin/habits? Введи Java return.",
+    "answers": [
+      "return \"redirect:/admin/habits\";"
+    ],
+    "hint": "Перед адресом добавь redirect:.",
+    "why": "Браузер делает новый GET после POST. Обновление страницы не отправит создание повторно.",
+    "quiz": "Какие решения подходят?",
+    "options": [
+      "Общий HabitService",
+      "th:text для названия",
+      "Отдельная база для админки",
+      "POST для удаления через форму"
+    ],
+    "correct": [
+      0,
+      1,
+      3
+    ],
+    "practice": "Подключи шаблоны второй недели. Реализуй создание, редактирование, отметку done и удаление. После каждой операции сделай redirect. Добавь отображение ошибок формы и сохрани введённое значение при ошибке.",
+    "source": "https://spring.io/guides/gs/serving-web-content/",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "HTML-контроллер и REST-контроллер",
+          "paragraphs": [
+            "AdminController получает браузерные запросы и возвращает шаблоны. REST-контроллер получает API-запросы и возвращает DTO. Оба вызывают один HabitService. Разница находится в транспортном слое, а не в бизнес-правилах привычек.",
+            "Model содержит данные для текущего отображения страницы. Сам по себе он не является постоянным хранилищем. На следующем запросе список обычно заново получают через сервис."
+          ],
+          "code": "model.addAttribute(\"habits\", service.list());\nreturn \"habits\";",
+          "explanation": "Возвращается имя шаблона habits.html, а не адрес API и не список в JSON."
+        },
+        {
+          "title": "Связывание полей и ошибки формы",
+          "paragraphs": [
+            "@RequestParam принимает отдельное поле формы. Для нескольких полей удобнее form-объект, связанный через @ModelAttribute и проверяемый через @Valid. BindingResult позволяет показать ошибки в той же форме.",
+            "Не перенаправляй сразу при ошибке, если из-за этого пропадут сообщения и ввод. При успехе redirect подходит, а при ошибке верни форму с данными и объяснением. BindingResult должен располагаться в правильном месте сигнатуры после проверяемого аргумента."
+          ],
+          "code": "String create(@Valid @ModelAttribute(\"form\") HabitForm form,\n              BindingResult errors, Model model) {\n    if (errors.hasErrors()) {\n        model.addAttribute(\"habits\", service.list());\n        return \"habits\";\n    }\n    service.create(form.toRequest());\n    return \"redirect:/admin/habits\";\n}",
+          "explanation": "Это фрагмент контроллера: HabitForm должен быть отдельным классом с полями, ограничениями и преобразованием."
+        },
+        {
+          "title": "CSRF и правильные действия",
+          "paragraphs": [
+            "Формы изменения состояния должны включать защиту от CSRF при cookie-сессии. Spring Security проверяет токен, а интеграция Thymeleaf помогает включить его в корректно обработанную форму.",
+            "DELETE в API и POST /admin/habits/{id}/delete в форме могут вызывать одну бизнес-операцию. Не делай удаление через обычную GET-ссылку — браузер, индексатор или предпросмотр могут открыть её как чтение."
+          ],
+          "code": "<form th:action=\"@{/admin/habits/{id}/delete(id=${habit.id})}\" method=\"post\">\n    <button type=\"submit\">Удалить</button>\n</form>",
+          "explanation": "Идентификатор передаётся серверу явно. Сервер отдельно проверяет авторизацию и существование записи."
+        },
+        {
+          "title": "Согласованность с Android",
+          "paragraphs": [
+            "Создай запись в админке и запроси список в приложении. Затем поменяй done в Android и обнови страницу админки. Оба должны получить одну сохранённую модель. Если результаты расходятся, сравни адрес сервера, конфигурацию базы и кеширование.",
+            "Обычная повторная загрузка не является real-time синхронизацией. Сегодня достаточно понятной кнопки обновления. Автоматические серверные события или polling можно изучать позже, когда базовый поток стабилен."
+          ],
+          "code": "// Проверка обеих сторон:\n// админка create → Android refresh\n// Android update → админка reload",
+          "explanation": "Сначала проверяй фактическое серверное состояние, затем отображение конкретного клиента."
+        }
+      ],
+      "pitfalls": [
+        "Не используй Model как базу данных.",
+        "Не делай redirect при ошибке формы без сохранения нужного контекста.",
+        "Не отключай CSRF глобально, чтобы заработала одна форма."
+      ],
+      "question": "Почему нужно возвращать форму при ошибке, а redirect — после успешного сохранения?",
+      "answer": "При ошибке важно сохранить введённые данные и сообщения. После успеха новый GET предотвращает повтор POST при обновлении страницы."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Безопасность и тесты интеграции",
+    "goal": "Защити админку и проверь API.",
+    "theory": [
+      "Админка должна требовать роль ADMIN. Для учебного API можно настроить Basic Auth по HTTPS; на реальном мобильном приложении обычно нужен отдельный поток авторизации и токены. Не вшивай административный пароль в APK.",
+      "Для браузерных форм оставь CSRF-защиту. Если API использует отдельную stateless-авторизацию без cookie, правила CSRF настраиваются отдельно для /api/**. Не отключай защиту глобально ради одной формы.",
+      "@SpringBootTest проверяет контекст приложения, MockMvc — HTTP-поведение. Тестируй успешные и запрещённые операции, 400 и 404. Учебный сертификат не заменяет эти проверки."
+    ],
+    "code": "// Фрагмент правил SecurityFilterChain\nhttp.authorizeHttpRequests(auth -> auth\n    .requestMatchers(\"/admin/**\").hasRole(\"ADMIN\")\n    .requestMatchers(\"/api/health\").permitAll()\n    .anyRequest().authenticated()\n);\n// Добавь formLogin и отдельную стратегию API-авторизации.\n// Пароли храни как хэши, секреты — вне исходников.",
+    "task": "Какая роль должна давать доступ к /admin/** в нашем учебном проекте?",
+    "answers": [
+      "ADMIN",
+      "ROLE_ADMIN"
+    ],
+    "hint": "Роль администратора. hasRole автоматически добавляет ROLE_.",
+    "why": "Админка меняет общие данные, поэтому её доступ должен быть ограничен.",
+    "quiz": "Какие утверждения верны?",
+    "options": [
+      "CSRF важен для форм с cookie-авторизацией",
+      "Пароль администратора можно включить в APK",
+      "401 и 403 нужно проверить",
+      "Секреты хранятся вне репозитория"
+    ],
+    "correct": [
+      0,
+      2,
+      3
+    ],
+    "practice": "Настрой администратора через внешнюю конфигурацию. Проверь вход, отказ без роли и работу CSRF в формах. Добавь MockMvc-тесты списка, создания, неверного ввода и неизвестного id. Убедись, что Android использует отдельные пользовательские права.",
+    "source": "https://spring.io/guides/gs/securing-web/",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Аутентификация и авторизация",
+          "paragraphs": [
+            "Аутентификация отвечает на вопрос, кто пользователь. Авторизация — какие действия ему разрешены. Вход сам по себе не должен давать доступ к админке всем. Административные маршруты требуют роли ADMIN.",
+            "401 означает, что нужна корректная аутентификация. 403 обычно означает, что запрос запрещён, например из-за недостаточных прав или проблем CSRF. UI должен объяснять отказ и не превращать его в бесконечный повтор."
+          ],
+          "code": "requestMatchers(\"/admin/**\").hasRole(\"ADMIN\")",
+          "explanation": "hasRole(\"ADMIN\") учитывает принятый префикс ROLE_. Согласуй роли пользователя и правило доступа."
+        },
+        {
+          "title": "Сессия и мобильное API",
+          "paragraphs": [
+            "Браузерная админка обычно использует форму входа и сессию в cookie. Мобильному клиенту можно дать отдельную стратегию, например токены. Basic Auth подходит для ограниченной учебной демонстрации только по HTTPS; постоянный административный пароль нельзя встраивать в APK.",
+            "Не считай, что CORS защищает базу или заменяет авторизацию. CORS регулирует доступ браузерного JavaScript между origins. Native Android-клиент не защищён таким механизмом и должен проходить обычную серверную авторизацию."
+          ],
+          "code": "// Браузерные формы: session + CSRF\n// Android API: отдельно выбранная авторизация\n// Оба варианта: серверная проверка прав",
+          "explanation": "Один пользовательский вход не должен автоматически открывать административные функции."
+        },
+        {
+          "title": "Секреты и CSRF",
+          "paragraphs": [
+            "Пароли пользователей хранят как проверяемые хэши с подходящим PasswordEncoder, а не как открытые строки. Секреты приложения и базы передают через внешнюю конфигурацию. В логах нельзя печатать пароли или токены.",
+            "CSRF нужен для операций, где браузер автоматически прикладывает авторизацию, например cookie. Если API действительно stateless и использует отдельный bearer-токен, его правила можно настраивать отдельно. «Это API» само по себе недостаточно для отключения защиты."
+          ],
+          "code": "// Плохое место для секрета:\n// public static final String ADMIN_PASSWORD = \"...\";\n// Правильный источник выбирается вне Git-репозитория.",
+          "explanation": "Чтение секретов из окружения помогает отделить код от конкретной среды запуска."
+        },
+        {
+          "title": "Интеграционный тест проверяет границу",
+          "paragraphs": [
+            "Unit-тест сервиса не проверяет JSON, аннотации маршрутов, Security и HTTP-коды. MockMvc позволяет отправить учебный HTTP-запрос через web-слой. Для защищённых тестов нужны соответствующий пользователь и CSRF там, где он требуется.",
+            "Проверь создание, неверный ввод, неизвестный id, отказ без входа и отказ без роли. Тест должен ожидать конкретный код и тело. Успешная загрузка контекста не доказывает, что все маршруты работают."
+          ],
+          "code": "// Набор ожиданий:\n// без входа → отказ\n// USER на /admin/** → отказ\n// ADMIN с корректной формой → успех\n// пустое title → 400 для REST",
+          "explanation": "Для страниц с formLogin отсутствие входа может проявляться redirect на login, а для API — 401: это зависит от настройки."
+        }
+      ],
+      "pitfalls": [
+        "Не путай CORS, CSRF и проверку прав: это разные задачи.",
+        "Не встраивай административные секреты в мобильное приложение.",
+        "Не считай успешный @SpringBootTest полной проверкой поведения."
+      ],
+      "question": "Почему авторизованный пользователь всё равно может получать 403?",
+      "answer": "Он может не иметь нужной роли, либо защищённое действие не проходит другую проверку, например CSRF. Нужно диагностировать конкретное правило, а не отключать всю защиту."
+    },
+    "readingMinutes": 35
+  },
+  {
+    "title": "Финальный босс: один продукт",
+    "goal": "Соедини Android, API и админку.",
+    "theory": [
+      "Финальный поток: Compose/View экран → ViewModel → Repository → Retrofit → REST Controller → Service → JPA → база. Админка входит через свой Java Controller в тот же Service.",
+      "Проверь сценарии в обе стороны: создание в Android видно в админке; переименование в админке видно после обновления списка в Android. Добавь состояние loading/error/empty и защиту от двойного нажатия.",
+      "Неделя не делает профессионалом. Уверенность растёт, когда можешь повторить проект самостоятельно, объяснить решение и исправить ошибку. Сертификат центра — игровой знак прохождения, не аккредитованный документ."
+    ],
+    "code": "// Единый формат ответа\n{ \"id\": 42, \"title\": \"Читать 20 минут\", \"done\": false }\n\n// Контракт\nGET    /api/habits\nPOST   /api/habits\nPUT    /api/habits/{id}\nDELETE /api/habits/{id}\n\n// Android debug baseUrl для стандартного эмулятора:\n// http://10.0.2.2:8080/",
+    "task": "Введи HTTP-код успешного удаления без тела ответа.",
+    "answers": [
+      "204"
+    ],
+    "hint": "Код из семейства 2xx: No Content.",
+    "why": "204 сообщает об успехе без тела. Клиент не должен пытаться десериализовать JSON из пустого ответа.",
+    "quiz": "Что обязательно проверить перед финалом?",
+    "options": [
+      "Создание в Android видно в админке",
+      "Изменение админки видно после обновления Android",
+      "Приложение отвечает при загрузке",
+      "Любой пользователь имеет права администратора"
+    ],
+    "correct": [
+      0,
+      1,
+      2
+    ],
+    "practice": "С нуля создай привычку в Android, переименуй в админке, обнови список и удали в Android. Перезапусти сервер и проверь сохранение. Отключи сеть: приложение не должно зависнуть. Покажи проект другу, исправь одну найденную проблему и запиши короткое демо. Затем самостоятельно добавь поле goalDays во все три части.",
+    "source": "https://spring.io/guides/",
+    "deepDive": {
+      "sections": [
+        {
+          "title": "Собираем один путь данных",
+          "paragraphs": [
+            "Проследи создание привычки от экрана до базы. UI выдаёт событие, ViewModel запускает Repository, сетевой клиент отправляет JSON, Controller читает DTO, Service проверяет правило, Repository сохраняет сущность. Ответ идёт обратно и превращается в новое состояние списка.",
+            "Если на каком-то этапе значение потерялось, ищи именно границу. Не меняй одновременно все части наугад. Сначала проверь HTTP напрямую, затем DTO, затем состояние UI."
+          ],
+          "code": "Android UI → ViewModel → Repository → HTTP\nHTTP → Controller → Service → JPA → база\nОтвет → DTO → новое состояние UI",
+          "explanation": "Админка использует второй контроллер, но тот же Service и Repository."
+        },
+        {
+          "title": "Контракт и реальные адреса",
+          "paragraphs": [
+            "Клиенты должны использовать одинаковые поля и маршруты. Числовой id в JSON должен корректно преобразовываться в тип клиента. При 204 удаления клиент ждёт только завершение. При 400 показывает ошибку ввода.",
+            "Проверь адрес в эмуляторе, адрес на телефоне и адрес браузерной админки. Они могут выглядеть по-разному, но вести к одному серверу. Не спутай тестовую базу и рабочую учебную базу на другом порту."
+          ],
+          "code": "// Создание: POST /api/habits\n// Ответ: {\"id\":42,\"title\":\"Читать\",\"done\":false}\n// Удаление: DELETE /api/habits/42 → 204",
+          "explanation": "После удаления список должен обновиться. Не оставляй запись видимой только из-за старой локальной копии."
+        },
+        {
+          "title": "Проверяем целостный сценарий",
+          "paragraphs": [
+            "Проверь создание в Android и просмотр в админке, затем переименование в админке и обновление Android. Отметь выполненной, удали и проверь оба интерфейса. После перезапуска данные должны сохраниться.",
+            "Проверь ошибки: отключённая сеть, неверный ввод, быстрые повторные нажатия, неизвестный id. UI должен оставаться отзывчивым и сообщать о реальном исходе. Если ошибка возникла, форма и нужные данные не должны исчезнуть без причины."
+          ],
+          "code": "// Чек-лист демо:\n// create → refresh admin → rename → refresh app\n// toggle → delete → restart → verify\n// offline → retry → verify",
+          "explanation": "Запиши, что ожидалось и что получилось. Это полезнее общего «вроде работает»."
+        },
+        {
+          "title": "Как проверить самостоятельность",
+          "paragraphs": [
+            "Добавь поле goalDays во все части: DTO, сущность, валидацию, форму админки, Android-модель и UI. Это проверит понимание архитектуры лучше повторного запуска готового образца. Обнови тесты для допустимых и недопустимых значений.",
+            "Уверенность означает, что ты можешь объяснить решение, проверить предположение и исправить ошибку. Игровой сертификат фиксирует прохождение учебного маршрута, но не заменяет оценку готового проекта или опыт эксплуатации."
+          ],
+          "code": "// Попробуй без образца:\n// найти, какие файлы затронет goalDays\n// изменить контракт\n// добавить проверки\n// обновить оба клиента",
+          "explanation": "Если сложно, вернись к конкретной теме и повтори её на другом небольшом примере."
+        }
+      ],
+      "pitfalls": [
+        "Не проверяй только один клиент, когда данные общие.",
+        "Не добавляй поле только в UI без изменения договора API.",
+        "Не называй учебное приложение production-готовым после одного успешного демо."
+      ],
+      "question": "Какое небольшое изменение лучше всего покажет, что ты понимаешь связку целиком?",
+      "answer": "Добавить поле во все слои, согласовать контракт, обработать неправильные значения и проверить обмен между обоими клиентами. Это требует понимания пути данных, а не копирования одного фрагмента."
+    },
+    "readingMinutes": 35
+  }
+]
