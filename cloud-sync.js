@@ -29,6 +29,7 @@ async function flush(){
     if(version!==epoch)return;
     queue.splice(0,count);storeQueue();
     let merged=result;for(const patch of queue)merged=applyPatch(merged,patch);
+    merged.last=state.last;
     state=validateState(merged);baseline=copy(state);cache();
     status(queue.length?'Синхронизируется…':'Сохранено в аккаунте');
     // Не пересоздаём редактор во время печати.
@@ -85,10 +86,11 @@ onAuthStateChanged(auth,account=>{
     try{
       let remote=snapshot.exists()?validateState(snapshot.data().progress):emptyProgress();
       for(const patch of queue)remote=applyPatch(remote,patch);
+      if(ready)remote.last=state.last;
       const changed=JSON.stringify(remote)!==JSON.stringify(state);
       state=validateState(remote);baseline=copy(state);cache();ready=true;
       // Снимки не сбрасывают фокус и текст редактора во время ввода.
-      if(changed&&document.activeElement?.id!=='answer')refresh();else updateProfile();
+      if(changed&&document.activeElement?.id!=='answer')refresh();else {updateProfile();renderStatus();}
       status(queue.length?'Синхронизируется…':'Сохранено в аккаунте');flush();
     }catch{status('Не удалось прочитать облачный прогресс. Экспортируй локальную копию.');}
   },()=>{status('Облачное хранилище недоступно. Локальный прогресс сохранён.');});
