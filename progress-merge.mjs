@@ -13,3 +13,10 @@ export function applyPatch(base,patch){
   for(const key of ['last','name'])if(Object.hasOwn(patch,key))result[key]=patch[key];
   return result;
 }
+export function mergePatches(first,next){
+  const result={};
+  for(const key of ['solved','practice'])result[key]=[...new Set([...(first[key]||[]),...(next[key]||[])])];
+  for(const key of maps)result[key]={...first[key],...next[key]};
+  for(const key of ['last','name']){if(Object.hasOwn(next,key))result[key]=next[key];else if(Object.hasOwn(first,key))result[key]=first[key];}
+  return result;
+}

@@ -2,7 +2,7 @@ import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,sendPasswordResetEmail} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js';
 import {getFirestore,doc,onSnapshot,runTransaction,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
 import {firebaseConfig} from './firebase-config.js';
-import {emptyProgress,diffProgress,applyPatch} from './progress-merge.mjs';
+import {emptyProgress,diffProgress,applyPatch,mergePatches} from './progress-merge.mjs';
 const auth=getAuth(initializeApp(firebaseConfig)),db=getFirestore();
 let user=null,unsubscribe=null,epoch=0,queue=[],baseline=emptyProgress(),timer=null,writing=false,ready=false;
 const copy=x=>structuredClone(x), status=text=>{document.querySelector('#syncStatus').textContent=text;};
@@ -13,7 +13,7 @@ window.onProgressSaved=()=>{
   if(!user)return;
   const patch=diffProgress(baseline,state);baseline=copy(state);
   if(JSON.stringify(patch)===JSON.stringify(diffProgress(state,state)))return;
-  queue.push(patch);storeQueue();status('Синхронизируется…');clearTimeout(timer);timer=setTimeout(flush,900);
+  if(!writing&&queue.length)queue=[mergePatches(queue.reduce(mergePatches),patch)];else queue.push(patch);storeQueue();status('Синхронизируется…');clearTimeout(timer);timer=setTimeout(flush,900);
 };
 async function flush(){
   if(!user||!ready||writing||!queue.length)return;
@@ -37,6 +37,7 @@ async function flush(){
   finally{if(version===epoch){writing=false;if(queue.length&&navigator.onLine)setTimeout(flush,5000);}}
 }
 window.addEventListener('online',flush);
+window.addEventListener('offline',()=>{if(user)status('Нет сети · изменения сохраняются в этом браузере');});
 const messages={
   'auth/invalid-email':'Проверь адрес email.', 'auth/invalid-credential':'Неверный email или пароль.',
   'auth/email-already-in-use':'Этот email уже зарегистрирован. Нажми «Войти».',
