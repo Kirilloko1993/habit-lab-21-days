@@ -1,0 +1,1 @@
+export const firebaseConfig={apiKey:'AIzaSyB5SLCcL5frz83jlOy4n4wvNLLVEABCG34',authDomain:'habit-lab-learning.firebaseapp.com',projectId:'habit-lab-learning',storageBucket:'habit-lab-learning.firebasestorage.app',messagingSenderId:'966435484903',appId:'1:966435484903:web:00558593911ef3f9589e42'};
