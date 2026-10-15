@@ -28,16 +28,14 @@ function currentWorkshopSource(i,stepIndex){
   if(stepIndex===0)return 'fun main() {\n'+source.split('\n').map(l=>'    '+l).join('\n')+'\n}';
   if(stepIndex===1||stepIndex===5)return source+'\n\nfun main() {\n    println(points(0))\n    println(points(3))\n    println(points(7))\n}';
   if(stepIndex===2)return source+'\n\nfun main() {\n    println(percent(3, 10))\n    println(percent(0, 10))\n    println(percent(10, 10))\n    println(percent(3, 0))\n}';
-  if(stepIndex===3)return 'fun points(days: Int): Int = days * 10\n\nfun main() {\n'+source.split('\n').map(l=>'    '+l).join('\n')+'\n}';
+  if(stepIndex===3)return 'fun main() {\n'+source.split('\n').map(l=>'    '+l).join('\n')+'\n}';
   if(stepIndex===4)return source+'\n\nfun main() {\n    for (days in listOf(0, 3, 5, 6, 20)) println(cappedPoints(days))\n}';
  }
  if(i===1){
-  const prefix='data class Habit(val title: String, val days: Int)\n\nfun main() {\n    val habits = listOf(Habit("Читать", 3), Habit("Бегать", 0), Habit("Зарядка", 7))\n';
-  const active='    val active = habits.filter { it.days > 0 }\n';
-  let body=source;
-  if(stepIndex===5)body=source.replace(/^val habits = .*\n/,'');
+  const prefix='data class Habit(val title: String, val days: Int)\n\nfun main() {\n';
+  const body=source.replace(/^data class Habit[^\n]*\n/, '');
   const suffix=stepIndex===0?'    println(displayName)':stepIndex===1||stepIndex===5?'    println(active)':stepIndex===2||stepIndex===3?'    println(titles)':'    println(experienced)';
-  return prefix+(stepIndex===2||stepIndex===3?active:'')+body.split('\n').map(l=>'    '+l).join('\n')+'\n'+suffix+'\n}';
+  return prefix+body.split('\n').map(l=>'    '+l).join('\n')+'\n'+suffix+'\n}';
  }
  return '// Kotlin/JVM: Android Views, Compose и Spring не входят в этот сервер.\n// Напиши отдельную Kotlin-программу с main() или скачай проект для IDE.\n\n'+defaultKotlinSource;
 }
