@@ -17,13 +17,13 @@ window.onProgressSaved=()=>{
 };
 async function flush(){
   if(!user||!ready||writing||!queue.length)return;
-  const version=epoch,account=user,items=queue.slice(),count=items.length;writing=true;
+  const version=epoch,account=user,items=queue.slice(),count=items.length;let tooLarge=false;writing=true;
   try{
     const result=await runTransaction(db,async tx=>{
       const ref=doc(db,'progress',account.uid),snap=await tx.get(ref);
       let next=snap.exists()?validateState(snap.data().progress):emptyProgress();
       for(const patch of items)next=applyPatch(next,patch);
-      if(JSON.stringify(next).length>700000)throw Error('progress-too-large');
+      if(new TextEncoder().encode(JSON.stringify(next)).length>800000)throw Error('progress-too-large');
       tx.set(ref,{version:1,progress:next,updatedAt:serverTimestamp()});return next;
     });
     if(version!==epoch)return;
@@ -34,8 +34,8 @@ async function flush(){
     status(queue.length?'Синхронизируется…':'Сохранено в аккаунте');
     // Не пересоздаём редактор во время печати.
     updateProfile();
-  }catch(error){if(version===epoch)status(error.message==='progress-too-large'?'Слишком много кода для облачного сохранения. Экспортируй прогресс.':'Не удалось синхронизировать. Изменения сохранены здесь; повторим при подключении.');}
-  finally{if(version===epoch){writing=false;if(queue.length&&navigator.onLine)setTimeout(flush,5000);}}
+  }catch(error){tooLarge=error.message==='progress-too-large';if(version===epoch)status(error.message==='progress-too-large'?'Слишком много кода для облачного сохранения. Экспортируй прогресс.':'Не удалось синхронизировать. Изменения сохранены здесь; повторим при подключении.');}
+  finally{if(version===epoch){writing=false;if(queue.length&&navigator.onLine&&!tooLarge)setTimeout(flush,5000);}}
 }
 window.addEventListener('online',flush);
 window.addEventListener('offline',()=>{if(user)status('Нет сети · изменения сохраняются в этом браузере');});
@@ -72,7 +72,7 @@ document.querySelector('#migrateGuest').onclick=()=>{
   }catch{status('Не удалось прочитать гостевой прогресс.');}
 };
 onAuthStateChanged(auth,account=>{
-  epoch++;unsubscribe?.();unsubscribe=null;clearTimeout(timer);writing=false;ready=false;user=account;queue=[];
+  epoch++;if(typeof compilerSession!=='undefined')compilerSession++;unsubscribe?.();unsubscribe=null;clearTimeout(timer);writing=false;ready=false;user=account;queue=[];
   KEY=account?'habitlab-user-'+account.uid:'habitlab-v1';
   try{state=validateState(JSON.parse(localStorage.getItem(KEY)||JSON.stringify(emptyProgress())));}catch{state=emptyProgress();}
   baseline=copy(state);refresh();
@@ -90,7 +90,7 @@ onAuthStateChanged(auth,account=>{
       const changed=JSON.stringify(remote)!==JSON.stringify(state);
       state=validateState(remote);baseline=copy(state);cache();ready=true;
       // Снимки не сбрасывают фокус и текст редактора во время ввода.
-      if(changed&&!document.activeElement?.matches('#answer, [data-workshop-editor]'))refresh();else {updateProfile();renderStatus();}
+      if(changed&&!document.activeElement?.matches('#answer, [data-workshop-editor], [data-workspace-editor]'))refresh();else {updateProfile();renderStatus();}
       status(queue.length?'Синхронизируется…':'Сохранено в аккаунте');flush();
     }catch{status('Не удалось прочитать облачный прогресс. Экспортируй локальную копию.');}
   },()=>{status('Облачное хранилище недоступно. Локальный прогресс сохранён.');});

@@ -68,7 +68,7 @@ function checkSlot(slot,value){
 function checkStep(step,values){const results=step.slots.map(s=>({slot:s,...checkSlot(s,values[s.id]||'')}));return {ok:results.every(r=>r.ok),results};}
 function readDraft(raw){
   if(typeof raw!=='string')return {code:'',labs:{}};
-  if(raw.startsWith('HABITLAB_WORKSHOP_V2\n')){try{const data=JSON.parse(raw.slice(21));if(data&&typeof data==='object'&&data.labs&&typeof data.labs==='object')return {code:typeof data.code==='string'?data.code:'',labs:data.labs};}catch{}}
+  if(raw.startsWith('HABITLAB_WORKSHOP_V2\n')){try{const data=JSON.parse(raw.slice(21));if(data&&typeof data==='object'&&data.labs&&typeof data.labs==='object')return {...data,code:typeof data.code==='string'?data.code:'',labs:data.labs};}catch{}}
   return {code:raw,labs:{}};
 }
 function writeDraft(data){return 'HABITLAB_WORKSHOP_V2\n'+JSON.stringify(data);}
