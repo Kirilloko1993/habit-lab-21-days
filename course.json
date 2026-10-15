@@ -77,7 +77,218 @@
       "question": "Почему функция расчёта, которая возвращает Int, удобнее функции, которая только печатает число?",
       "answer": "Результат можно передать в UI, сравнить в тесте или использовать в другом вычислении. Напечатанный текст сам по себе не является возвращаемым результатом."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Счётчик не увеличивается",
+        "brief": "В команде оставили val у изменяемого счётчика. Исправь только ключевое слово. Название привычки менять не нужно.",
+        "starter": "val title = \"Читать\"\n{{keyword}} completedDays = 3\ncompletedDays += 1\nprintln(completedDays)",
+        "slots": [
+          {
+            "id": "keyword",
+            "label": "Ключевое слово",
+            "answers": [
+              "var"
+            ],
+            "hint": "Переменной ниже присваивают новое число.",
+            "explain": "var разрешает новое присваивание; val — нет.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "После исправления счётчик можно увеличить с 3 до 4.",
+        "kind": "ПОЧИНИ"
+      },
+      {
+        "title": "Первая функция начисления XP",
+        "brief": "У функции уже есть имя, параметр и результат. Допиши только выражение: за каждый день даём 10 XP.",
+        "starter": "fun points(days: Int): Int {\n    return {{xp}}\n}",
+        "slots": [
+          {
+            "id": "xp",
+            "label": "Выражение для XP",
+            "answers": [
+              "days * 10",
+              "10 * days"
+            ],
+            "hint": "Используй параметр days и умножение *.",
+            "explain": "days — входное число. Выражение после return вычисляет возвращаемое значение.",
+            "kind": "expression",
+            "tests": [
+              {
+                "env": {
+                  "days": 0
+                },
+                "expected": 0,
+                "label": "Ни одного дня → 0 XP"
+              },
+              {
+                "env": {
+                  "days": 3
+                },
+                "expected": 30,
+                "label": "3 дня → 30 XP"
+              },
+              {
+                "env": {
+                  "days": 7
+                },
+                "expected": 70,
+                "label": "7 дней → 70 XP"
+              }
+            ]
+          }
+        ],
+        "result": "Функция зависит от входного числа, а не возвращает всегда 30.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Почини потерянные проценты",
+        "brief": "Разработчик написал done / target * 100. На целых числах 3 / 10 даёт 0. Поменяй порядок вычислений.",
+        "starter": "fun percent(done: Int, target: Int): Int {\n    if (target <= 0) return 0\n    return {{ratio}}\n}",
+        "slots": [
+          {
+            "id": "ratio",
+            "label": "Расчёт процента",
+            "answers": [
+              "done * 100 / target"
+            ],
+            "hint": "Сначала умножь done на 100, затем раздели на target.",
+            "explain": "В Kotlin деление двух Int отбрасывает дробную часть. Защита target <= 0 уже написана.",
+            "kind": "expression",
+            "tests": [
+              {
+                "env": {
+                  "done": 3,
+                  "target": 10
+                },
+                "expected": 30,
+                "label": "3 из 10 → 30%"
+              },
+              {
+                "env": {
+                  "done": 0,
+                  "target": 10
+                },
+                "expected": 0,
+                "label": "0 из 10 → 0%"
+              },
+              {
+                "env": {
+                  "done": 10,
+                  "target": 10
+                },
+                "expected": 100,
+                "label": "10 из 10 → 100%"
+              }
+            ]
+          }
+        ],
+        "result": "Теперь частичный прогресс не теряется.",
+        "kind": "ПОЧИНИ"
+      },
+      {
+        "title": "Соедини объект и функцию",
+        "brief": "Функция points уже существует. Передай ей число дней из объекта reading. Не объявляй новую функцию.",
+        "starter": "data class Habit(val title: String, val days: Int)\nval reading = Habit(\"Читать\", 3)\nprintln({{call}})",
+        "slots": [
+          {
+            "id": "call",
+            "label": "Вызов функции",
+            "answers": [
+              "points(reading.days)",
+              "points(days = reading.days)"
+            ],
+            "hint": "Через точку прочитай reading.days, затем передай его в points(...).",
+            "explain": "reading.days получает свойство. points(...) вызывает функцию с полученным числом.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "На этой строке points получает 3 и возвращает 30.",
+        "kind": "СОЕДИНИ"
+      },
+      {
+        "title": "Заказчик изменил правило",
+        "brief": "Теперь первые 5 дней дают по 10 XP, остальные пока не учитываются. Используй if как выражение. Не меняй сигнатуру функции.",
+        "starter": "fun cappedPoints(days: Int): Int {\n    return {{cap}}\n}",
+        "slots": [
+          {
+            "id": "cap",
+            "label": "Выражение с ограничением",
+            "answers": [
+              "if (days > 5) 50 else days * 10",
+              "if (days <= 5) days * 10 else 50"
+            ],
+            "hint": "Форма: if (условие) значение else другоеЗначение.",
+            "explain": "В Kotlin if возвращает выбранное значение; 6 и 20 дней здесь дают те же 50 XP.",
+            "kind": "expression",
+            "tests": [
+              {
+                "env": {
+                  "days": 0
+                },
+                "expected": 0,
+                "label": "0 дней → 0"
+              },
+              {
+                "env": {
+                  "days": 3
+                },
+                "expected": 30,
+                "label": "3 дня → 30"
+              },
+              {
+                "env": {
+                  "days": 5
+                },
+                "expected": 50,
+                "label": "5 дней → 50"
+              },
+              {
+                "env": {
+                  "days": 6
+                },
+                "expected": 50,
+                "label": "6 дней → 50"
+              },
+              {
+                "env": {
+                  "days": 20
+                },
+                "expected": 50,
+                "label": "20 дней → 50"
+              }
+            ]
+          }
+        ],
+        "result": "Ты изменил правило начисления, сохранив внешний вид функции.",
+        "kind": "ИЗМЕНИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Напиши функцию points: принимает days: Int, возвращает Int — количество дней, умноженное на 10.",
+        "starter": "// В проекте уже есть Habit и main. Добавь функцию:\n{{final}}\n// main вызовет points(3)",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "fun points(days: Int): Int = days * 10",
+              "fun points(days: Int) = days * 10",
+              "fun points(days: Int): Int { return days * 10 }"
+            ],
+            "hint": "Начни с fun points(days: Int). Для одного выражения подходит =.",
+            "explain": "Возвращаемое значение зависит от параметра. Тип Int можно указать явно или вывести. Блочная форма требует return.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Итоговый принятый ответ сохранится для Android-проекта.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Null, коллекции и преобразования",
@@ -155,7 +366,196 @@
       "question": "Какой тип будет у habits.filter { it.days > 0 }.map { it.title }?",
       "answer": "List<String>: filter сохраняет Habit, а map заменяет каждый Habit его строковым title."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Не дай экрану упасть на null",
+        "brief": "Название может отсутствовать. Допиши два оператора: безопасный доступ и запасное значение.",
+        "starter": "val nickname: String? = null\nval displayName = nickname{{safe}}uppercase() {{fallback}} \"Гость\"",
+        "slots": [
+          {
+            "id": "safe",
+            "label": "Оператор перед uppercase()",
+            "answers": [
+              "?."
+            ],
+            "hint": "Точка обращается к объекту. Вопрос перед точкой проверяет, что объект есть.",
+            "explain": "?. не вызывает uppercase(), если nickname равен null.",
+            "kind": "token",
+            "tests": []
+          },
+          {
+            "id": "fallback",
+            "label": "Оператор перед запасным текстом",
+            "answers": [
+              "?:"
+            ],
+            "hint": "В Kotlin запасное значение задаёт оператор Elvis.",
+            "explain": "?: выбирает правое значение, если слева null.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Для null экран показывает «Гость», для «кирилл» — «КИРИЛЛ».",
+        "kind": "ПОЧИНИ"
+      },
+      {
+        "title": "Напиши условие для фильтра",
+        "brief": "Список уже есть. Допиши только условие внутри лямбды: оставляем привычки, где days больше нуля.",
+        "starter": "val active = habits.filter { habit ->\n    {{predicate}}\n}",
+        "slots": [
+          {
+            "id": "predicate",
+            "label": "Условие отбора",
+            "answers": [
+              "habit.days > 0",
+              "0 < habit.days"
+            ],
+            "hint": "habit — текущий объект. Число дней читается как habit.days.",
+            "explain": "filter вызывает лямбду для каждого объекта. true оставляет элемент, false убирает.",
+            "kind": "expression",
+            "tests": [
+              {
+                "env": {
+                  "habit.days": 0
+                },
+                "expected": false,
+                "label": "0 дней → убрать"
+              },
+              {
+                "env": {
+                  "habit.days": 3
+                },
+                "expected": true,
+                "label": "3 дня → оставить"
+              },
+              {
+                "env": {
+                  "habit.days": -1
+                },
+                "expected": false,
+                "label": "−1 день → убрать"
+              }
+            ]
+          }
+        ],
+        "result": "Из Читать:3, Бегать:0, Зарядка:7 остаются Читать и Зарядка.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Из списка объектов — список названий",
+        "brief": "Фильтр уже готов. Теперь допиши свойство, которое должна вернуть лямбда map.",
+        "starter": "val titles = active.map { habit ->\n    {{title}}\n}",
+        "slots": [
+          {
+            "id": "title",
+            "label": "Результат преобразования",
+            "answers": [
+              "habit.title"
+            ],
+            "hint": "Нужно название текущей привычки, не весь объект.",
+            "explain": "map собирает результаты последнего выражения лямбды в новый список.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Получаем список строк [Читать, Зарядка].",
+        "kind": "ПРЕОБРАЗУЙ"
+      },
+      {
+        "title": "Укороти лямбду без потери смысла",
+        "brief": "У лямбды один параметр. Его можно не называть явно: Kotlin предоставит короткое имя.",
+        "starter": "val titles = active.map { {{short}}.title }",
+        "slots": [
+          {
+            "id": "short",
+            "label": "Неявное имя единственного параметра",
+            "answers": [
+              "it"
+            ],
+            "hint": "Две буквы: i и t.",
+            "explain": "it — единственный параметр лямбды, когда имя не объявлено через ->.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "active.map { it.title } делает то же, что active.map { habit -> habit.title }.",
+        "kind": "ПЕРЕПИШИ"
+      },
+      {
+        "title": "Новый фильтр: минимум три дня",
+        "brief": "Вчера оставляли все привычки с прогрессом. Сегодня заказчик хочет видеть только привычки с тремя и более днями.",
+        "starter": "val experienced = habits.filter { habit ->\n    {{threshold}}\n}",
+        "slots": [
+          {
+            "id": "threshold",
+            "label": "Новое условие",
+            "answers": [
+              "habit.days >= 3",
+              "habit.days > 2",
+              "3 <= habit.days"
+            ],
+            "hint": "Ровно 3 тоже должно пройти: нужен оператор «больше или равно».",
+            "explain": "Условие внутри filter — обычное Boolean-выражение. Меняем правило, а обход списка остаётся прежним.",
+            "kind": "expression",
+            "tests": [
+              {
+                "env": {
+                  "habit.days": 0
+                },
+                "expected": false,
+                "label": "0 → убрать"
+              },
+              {
+                "env": {
+                  "habit.days": 2
+                },
+                "expected": false,
+                "label": "2 → убрать"
+              },
+              {
+                "env": {
+                  "habit.days": 3
+                },
+                "expected": true,
+                "label": "3 → оставить"
+              },
+              {
+                "env": {
+                  "habit.days": 8
+                },
+                "expected": true,
+                "label": "8 → оставить"
+              }
+            ]
+          }
+        ],
+        "result": "Ты изменил требование и проверил границу: ровно 3 дня.",
+        "kind": "ИЗМЕНИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Напиши выражение: из habits получить только привычки с days больше нуля.",
+        "starter": "val habits = listOf(Habit(\"Читать\", 3), Habit(\"Бегать\", 0))\nval active = {{final}}\nprintln(active)",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "habits.filter { it.days > 0 }",
+              "habits.filter { habit -> habit.days > 0 }"
+            ],
+            "hint": "Нужен filter, а внутри — логическое условие.",
+            "explain": "filter сохраняет сами объекты, map меняет их представление. Именованный параметр и it дают одинаковый результат.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Итоговый принятый ответ сохранится для Android-проекта.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Android Views: TextView и события",
@@ -234,7 +634,93 @@
       "question": "Почему после поворота текст может исчезнуть, хотя кнопка раньше успешно его меняла?",
       "answer": "Пересоздались Activity и её View. Если источник данных не восстановлен, новый TextView получает исходное состояние."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Найди элемент экрана",
+        "brief": "XML уже содержит TextView с id title. Допиши тип элемента.",
+        "starter": "val title = findViewById<{{type}}>(R.id.title)",
+        "slots": [
+          {
+            "id": "type",
+            "label": "Тип элемента",
+            "answers": [
+              "TextView"
+            ],
+            "hint": "Название элемента совпадает с XML-тегом.",
+            "explain": "Тип сообщает Kotlin, какие свойства доступны у найденного View.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "У title становится доступно свойство text.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Кнопка пока ничего не делает",
+        "brief": "Обработчик уже подключён. Допиши строку для увеличения счётчика.",
+        "starter": "var count = 0\nbutton.setOnClickListener {\n    {{increase}}\n    title.text = count.toString()\n}",
+        "slots": [
+          {
+            "id": "increase",
+            "label": "Увеличение счётчика",
+            "answers": [
+              "count++",
+              "count += 1",
+              "count = count + 1"
+            ],
+            "hint": "Нужно изменить count на 1, а не создать новую переменную.",
+            "explain": "Код внутри обработчика выполнится при нажатии, не при его объявлении.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "После первого нажатия будет 1, после второго — 2.",
+        "kind": "ОЖИВИ"
+      },
+      {
+        "title": "Число нужно показать текстом",
+        "brief": "TextView принимает текст. Допиши преобразование Int в String.",
+        "starter": "title.text = count.{{convert}}()",
+        "slots": [
+          {
+            "id": "convert",
+            "label": "Имя функции",
+            "answers": [
+              "toString"
+            ],
+            "hint": "Метод превращает число в строку.",
+            "explain": "Неявной подстановки Int в свойство text здесь нет.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Число 3 отображается как текст «3».",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Переменная title имеет тип TextView. Напиши строку, которая устанавливает текст «Готово».",
+        "starter": "button.setOnClickListener {\n    {{final}}\n}",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "title.text = \"Готово\"",
+              "title.setText(\"Готово\")"
+            ],
+            "hint": "У TextView есть свойство text и метод setText.",
+            "explain": "Kotlin позволяет обращаться к Java getter/setter как к свойствам. Оба варианта изменяют видимый текст.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Итоговый принятый ответ сохранится для Android-проекта.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "RecyclerView: список и ViewHolder",
@@ -314,7 +800,92 @@
       "question": "Почему два элемента с одинаковым названием не должны считаться одним элементом?",
       "answer": "Название может повторяться и меняться. Личность привычки определяется устойчивым id."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Строки не появляются",
+        "brief": "Список уже подключён, но ему нужно вертикальное расположение. Допиши LayoutManager.",
+        "starter": "recycler.layoutManager = {{manager}}(this)",
+        "slots": [
+          {
+            "id": "manager",
+            "label": "Класс расположения",
+            "answers": [
+              "LinearLayoutManager"
+            ],
+            "hint": "Начинается с Linear.",
+            "explain": "LayoutManager отвечает за расположение и прокрутку строк.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Список получает вертикальное расположение.",
+        "kind": "ПОЧИНИ"
+      },
+      {
+        "title": "У строки чужое название",
+        "brief": "В bind нужно каждый раз выставлять данные текущего элемента. Допиши выражение.",
+        "starter": "override fun onBindViewHolder(holder: HabitHolder, position: Int) {\n    holder.title.text = {{text}}\n}",
+        "slots": [
+          {
+            "id": "text",
+            "label": "Название текущей модели",
+            "answers": [
+              "items[position].title"
+            ],
+            "hint": "Сначала возьми элемент items по position, затем его title.",
+            "explain": "ViewHolder переиспользуется; старый текст необходимо заменить.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Каждая строка показывает своё название.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Проверь отсутствие позиции",
+        "brief": "После удаления элемента позиция может стать недействительной. Допиши константу.",
+        "starter": "val position = holder.bindingAdapterPosition\nif (position != {{missing}}) {\n    onHabitClick(items[position])\n}",
+        "slots": [
+          {
+            "id": "missing",
+            "label": "Нет действительной позиции",
+            "answers": [
+              "RecyclerView.NO_POSITION"
+            ],
+            "hint": "Константа класса RecyclerView.",
+            "explain": "Позиция элемента может измениться между bind и кликом.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Клик по удалённой строке не обращается к неверному индексу.",
+        "kind": "ЗАЩИТИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "В адаптере есть items: List<Habit>. Напиши getItemCount, возвращающий размер списка.",
+        "starter": "class HabitAdapter {\n    // items уже объявлен; вставь метод адаптера:\n    {{final}}\n}",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "override fun getItemCount(): Int = items.size",
+              "override fun getItemCount() = items.size",
+              "override fun getItemCount(): Int { return items.size }"
+            ],
+            "hint": "Переопредели функцию с override. Размер списка — свойство size.",
+            "explain": "RecyclerView запрашивает число строк у адаптера. Здесь нужна длина данных, а не фиксированное число.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Итоговый принятый ответ сохранится для Android-проекта.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Compose: UI как функция состояния",
@@ -393,7 +964,93 @@
       "question": "Зачем передавать done и onToggle в строку, если можно хранить done внутри неё?",
       "answer": "Владелец состояния сохраняет согласованность списка и данных. Строка лишь отображает значение и сообщает о событии, поэтому не возникает отдельной несинхронизированной копии."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Счётчик не обновляет экран",
+        "brief": "Состояние должно наблюдаться Compose. Допиши фабрику состояния.",
+        "starter": "var count by rememberSaveable { {{state}}(0) }",
+        "slots": [
+          {
+            "id": "state",
+            "label": "Фабрика состояния",
+            "answers": [
+              "mutableStateOf"
+            ],
+            "hint": "Нужен MutableState, а не просто число.",
+            "explain": "Compose отслеживает чтение состояния и обновляет затронутый интерфейс.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Изменение count становится наблюдаемым.",
+        "kind": "ПОЧИНИ"
+      },
+      {
+        "title": "Подключи событие",
+        "brief": "В обработчике кнопки увеличь count на единицу.",
+        "starter": "Button(onClick = { {{click}} }) {\n    Text(\"Отметить\")\n}",
+        "slots": [
+          {
+            "id": "click",
+            "label": "Действие при клике",
+            "answers": [
+              "count++",
+              "count += 1",
+              "count = count + 1"
+            ],
+            "hint": "Обычное изменение счётчика внутри лямбды.",
+            "explain": "Лямбда — действие, которое кнопка вызовет позже.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Кнопка меняет состояние, Text читает новое значение.",
+        "kind": "ОЖИВИ"
+      },
+      {
+        "title": "Собери вертикальный блок",
+        "brief": "Два текста должны идти друг под другом. Допиши контейнер.",
+        "starter": "{{layout}} {\n    Text(\"Привычки\")\n    Text(\"Сегодня: 3\")\n}",
+        "slots": [
+          {
+            "id": "layout",
+            "label": "Composable-контейнер",
+            "answers": [
+              "Column"
+            ],
+            "hint": "Row размещает горизонтально; нужен другой контейнер.",
+            "explain": "Column принимает лямбду с содержимым и размещает его вертикально.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Заголовок и счётчик стоят друг под другом.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Напиши composable-функцию HabitTitle с параметром title: String, показывающую Text(title).",
+        "starter": "// Добавь функцию, затем вызови HabitTitle(\"Читать\")\n{{final}}",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "@Composable fun HabitTitle(title: String) { Text(title) }",
+              "@Composable fun HabitTitle(title: String) = Text(title)"
+            ],
+            "hint": "Пометь функцию @Composable и вызови Text внутри.",
+            "explain": "Компонент зависит от входного title. Его можно переиспользовать и проверять в Preview.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Итоговый принятый ответ сохранится для Android-проекта.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Корутины: синхронно и асинхронно",
@@ -471,7 +1128,90 @@
       "question": "Чем delay отличается от Thread.sleep, если обе операции ждут секунду?",
       "answer": "delay приостанавливает корутину, освобождая поток. Thread.sleep удерживает поток всю секунду, поэтому в главном потоке блокирует интерфейс."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Не блокируй UI файловым чтением",
+        "brief": "Внутри suspend-функции переключи блокирующее чтение на IO.",
+        "starter": "val text = withContext({{dispatcher}}) {\n    file.readText()\n}",
+        "slots": [
+          {
+            "id": "dispatcher",
+            "label": "Диспетчер",
+            "answers": [
+              "Dispatchers.IO"
+            ],
+            "hint": "Здесь нужен диспетчер для блокирующего ввода-вывода.",
+            "explain": "suspend само по себе не переносит блокирующий код с главного потока.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Чтение выполняется на IO-диспетчере.",
+        "kind": "ПОЧИНИ"
+      },
+      {
+        "title": "Не проглатывай отмену",
+        "brief": "Отмена корутины должна пройти выше. Допиши строку.",
+        "starter": "catch (e: CancellationException) {\n    {{cancel}}\n}",
+        "slots": [
+          {
+            "id": "cancel",
+            "label": "Передать отмену",
+            "answers": [
+              "throw e"
+            ],
+            "hint": "Нужно повторно выбросить полученное исключение.",
+            "explain": "Отмена — сигнал остановки задачи, её не превращают в обычную ошибку загрузки.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Отменённый экран не продолжает загрузку.",
+        "kind": "ЗАЩИТИ"
+      },
+      {
+        "title": "Запусти загрузку в scope",
+        "brief": "В ViewModel допиши запуск корутины.",
+        "starter": "fun load() = viewModelScope.{{launch}} {\n    state.value = UiState.Success(repository.load())\n}",
+        "slots": [
+          {
+            "id": "launch",
+            "label": "Построитель корутины",
+            "answers": [
+              "launch"
+            ],
+            "hint": "Этот вызов запускает работу и возвращает Job.",
+            "explain": "viewModelScope связывает время жизни работы с ViewModel.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Загрузка запускается из обычного обработчика.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Напиши вызов, который выполняет file.readText() в Dispatchers.IO через withContext.",
+        "starter": "suspend fun readFile(): String =\n    {{final}}",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "withContext(Dispatchers.IO) { file.readText() }"
+            ],
+            "hint": "withContext принимает контекст и блок кода.",
+            "explain": "Блокирующее чтение файла не должно занимать главный поток. Приостановка позволяет UI продолжать обрабатывать события.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Итоговый принятый ответ сохранится для Android-проекта.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Android-проект: CRUD и API-клиент",
@@ -549,7 +1289,90 @@
       "question": "Почему приложение можно начать до готовности сервера?",
       "answer": "UI и ViewModel зависят от контракта Repository. FakeRepository реализует те же операции; сетевую реализацию подключают позже."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Объяви загрузку списка",
+        "brief": "Допиши HTTP-аннотацию чтения.",
+        "starter": "interface HabitApi {\n    @{{method}}(\"api/habits\")\n    suspend fun list(): List<HabitDto>\n}",
+        "slots": [
+          {
+            "id": "method",
+            "label": "Аннотация метода",
+            "answers": [
+              "GET"
+            ],
+            "hint": "Получение без изменения ресурса.",
+            "explain": "Метод GET описывает чтение списка по указанному пути.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Контракт: GET /api/habits.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Передай JSON создания",
+        "brief": "Запрос создания должен отправить объект в теле.",
+        "starter": "@POST(\"api/habits\")\nsuspend fun create(@{{body}} request: HabitRequest): HabitDto",
+        "slots": [
+          {
+            "id": "body",
+            "label": "Аннотация аргумента",
+            "answers": [
+              "Body"
+            ],
+            "hint": "В Retrofit тело JSON задаёт @Body.",
+            "explain": "Тело запроса отличается от параметра пути или строки запроса.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Название привычки уходит в JSON тела.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Удаляй нужный id",
+        "brief": "Свяжи параметр Kotlin с {id} в пути.",
+        "starter": "@DELETE(\"api/habits/{id}\")\nsuspend fun delete(@{{path}}(\"id\") id: Long)",
+        "slots": [
+          {
+            "id": "path",
+            "label": "Аннотация параметра пути",
+            "answers": [
+              "Path"
+            ],
+            "hint": "Имя аннотации означает «путь».",
+            "explain": "@Path подставляет значение параметра в часть URL.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "id = 42 задаёт путь /api/habits/42.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Какой HTTP-метод нужен для получения списка без изменения данных? Введи название метода.",
+        "starter": "@{{final}}(\"api/habits\")\nsuspend fun list(): List<HabitDto>",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "GET"
+            ],
+            "hint": "Это метод чтения ресурса.",
+            "explain": "GET читает данные. POST обычно создаёт ресурс, PUT заменяет или обновляет, DELETE удаляет.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Итоговый принятый ответ сохранится для Android-проекта.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Java после Kotlin",
@@ -627,7 +1450,113 @@
       "question": "Почему a.equals(b) подходит для сравнения названий привычек лучше a == b?",
       "answer": "equals сравнивает содержимое строк, а == у ссылочных типов проверяет, указывают ли ссылки на один объект."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Верни XP из Java-метода",
+        "brief": "Метод уже объявлен. Допиши арифметическое выражение.",
+        "starter": "public static int points(int days) {\n    return {{xp}};\n}",
+        "slots": [
+          {
+            "id": "xp",
+            "label": "Выражение",
+            "answers": [
+              "days * 10",
+              "10 * days"
+            ],
+            "hint": "Умножь параметр days на 10.",
+            "explain": "В Java тип результата стоит до имени метода; после return всё ещё обычное выражение.",
+            "kind": "expression",
+            "tests": [
+              {
+                "env": {
+                  "days": 0
+                },
+                "expected": 0,
+                "label": "0 → 0"
+              },
+              {
+                "env": {
+                  "days": 3
+                },
+                "expected": 30,
+                "label": "3 → 30"
+              },
+              {
+                "env": {
+                  "days": 8
+                },
+                "expected": 80,
+                "label": "8 → 80"
+              }
+            ]
+          }
+        ],
+        "result": "Правило начисления сохранилось при переходе с Kotlin на Java.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Заверши инструкцию",
+        "brief": "Java требует символ в конце return.",
+        "starter": "return days * 10{{end}}",
+        "slots": [
+          {
+            "id": "end",
+            "label": "Конец инструкции",
+            "answers": [
+              ";"
+            ],
+            "hint": "В Java инструкции часто заканчиваются точкой с запятой.",
+            "explain": "Это часть синтаксиса Java, а не Kotlin.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Метод имеет завершённый return.",
+        "kind": "ПОЧИНИ"
+      },
+      {
+        "title": "Прочитай record",
+        "brief": "У record аксессор — метод с именем компонента. Допиши вызов.",
+        "starter": "String title = habit.{{access}};",
+        "slots": [
+          {
+            "id": "access",
+            "label": "Чтение названия",
+            "answers": [
+              "title()"
+            ],
+            "hint": "В Java record используется вызов title(), а не поле title.",
+            "explain": "Скобки обозначают вызов метода.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Получаем название из record.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Напиши метод public static int points(int days), возвращающий days * 10.",
+        "starter": "public class Points {\n    {{final}}\n}",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "public static int points(int days) { return days * 10; }"
+            ],
+            "hint": "В Java тип возвращаемого значения идёт перед именем метода.",
+            "explain": "static позволяет вызывать метод без экземпляра Points. return завершает метод и возвращает результат.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Ты собрал итоговый фрагмент сегодняшней темы.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "ООП: инкапсуляция и интерфейсы",
@@ -705,7 +1634,91 @@
       "question": "Что надо изменить в HabitService при замене памяти на базу, если обе реализации соблюдают HabitStore?",
       "answer": "Бизнес-логику менять не требуется. Меняется создание и передача конкретной реализации хранилища."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Спрячь хранилище",
+        "brief": "Поле не должно быть открытым для произвольной замены снаружи.",
+        "starter": "{{visibility}} final HabitStore store;",
+        "slots": [
+          {
+            "id": "visibility",
+            "label": "Видимость",
+            "answers": [
+              "private"
+            ],
+            "hint": "Нужна видимость только внутри класса.",
+            "explain": "Инкапсуляция ограничивает прямой доступ к внутренним зависимостям.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Внешний код не присваивает store напрямую.",
+        "kind": "ЗАЩИТИ"
+      },
+      {
+        "title": "Вызови зависимость",
+        "brief": "Сервис должен делегировать чтение хранилищу.",
+        "starter": "public List<Habit> list() {\n    return {{load}};\n}",
+        "slots": [
+          {
+            "id": "load",
+            "label": "Загрузка из store",
+            "answers": [
+              "store.findAll()",
+              "this.store.findAll()"
+            ],
+            "hint": "Вызови findAll() у поля store.",
+            "explain": "Сервис использует переданную зависимость, а не создаёт хранилище на каждый запрос.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Список проходит из store в сервис.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Опиши договор",
+        "brief": "HabitStore объявляет операции, реализация будет отдельной.",
+        "starter": "public {{contract}} HabitStore {\n    List<Habit> findAll();\n}",
+        "slots": [
+          {
+            "id": "contract",
+            "label": "Вид объявления",
+            "answers": [
+              "interface"
+            ],
+            "hint": "Договор без конкретного хранилища.",
+            "explain": "Интерфейс позволяет подменить реализацию для теста или другой базы.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Сервису достаточно знать контракт.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "В конструкторе параметр store. Напиши присваивание полю с тем же именем.",
+        "starter": "public HabitService(HabitStore store) {\n    {{final}}\n}",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "this.store = store;"
+            ],
+            "hint": "Для обращения к полю экземпляра используй this.",
+            "explain": "Без this оба имени обозначали бы параметр. Присваивание сохраняет зависимость в объекте.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Ты собрал итоговый фрагмент сегодняшней темы.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Коллекции и generics",
@@ -784,7 +1797,91 @@
       "question": "Почему Map<Long, Habit> использует Long, а не long?",
       "answer": "Параметры generics должны быть ссылочными типами. Long — объектная оболочка примитивного long."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Сначала отфильтруй",
+        "brief": "Из потока оставь выполненные привычки.",
+        "starter": "habits.stream()\n    .{{filter}}(Habit::done)\n    .map(Habit::title)\n    .toList();",
+        "slots": [
+          {
+            "id": "filter",
+            "label": "Операция отбора",
+            "answers": [
+              "filter"
+            ],
+            "hint": "Предикат принимает элемент и возвращает boolean.",
+            "explain": "filter оставляет элементы, для которых done() вернул true.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Невыполненные привычки не попадут в результат.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Затем преобразуй",
+        "brief": "После отбора получи названия вместо объектов.",
+        "starter": "habits.stream()\n    .filter(Habit::done)\n    .{{map}}(Habit::title)\n    .toList();",
+        "slots": [
+          {
+            "id": "map",
+            "label": "Операция преобразования",
+            "answers": [
+              "map"
+            ],
+            "hint": "Название такое же, как в Kotlin.",
+            "explain": "map меняет тип элементов потока с Habit на String.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Результат — список названий.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Найди элемент по ключу",
+        "brief": "Переменная byId — Map<Long, Habit>. Получи значение по id.",
+        "starter": "Habit habit = byId.{{get}}(id);",
+        "slots": [
+          {
+            "id": "get",
+            "label": "Метод поиска",
+            "answers": [
+              "get"
+            ],
+            "hint": "Карта хранит пары ключ → значение.",
+            "explain": "Если ключа нет, get вернёт null, это нужно учитывать вызывающему коду.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Обращаемся по устойчивому id, а не позиции списка.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Введи тип коллекции Java для соответствия id → Habit (ключ типа Long).",
+        "starter": "{{final}} byId = new HashMap<>();",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "Map<Long, Habit>",
+              "java.util.Map<Long, Habit>"
+            ],
+            "hint": "Нужны пары ключ-значение и два параметра типа.",
+            "explain": "Map позволяет найти объект по ключу. Тип ключа здесь Long, а значения — Habit.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Ты собрал итоговый фрагмент сегодняшней темы.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Ошибки и проверки",
@@ -862,7 +1959,90 @@
       "question": "Чем плох тест, который вызывает create, но ничего не проверяет?",
       "answer": "Он может пройти даже при неправильном результате или отсутствии сохранения. Нужна проверка наблюдаемого бизнес-поведения."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Пустая строка из пробелов",
+        "brief": "Допиши проверку, которая считает строку из пробелов пустым названием.",
+        "starter": "if (title == null || title.{{blank}}()) {\n    throw new IllegalArgumentException(\"Название пустое\");\n}",
+        "slots": [
+          {
+            "id": "blank",
+            "label": "Проверка строки",
+            "answers": [
+              "isBlank"
+            ],
+            "hint": "isEmpty не считает пробелы пустым содержимым.",
+            "explain": "|| не вычисляет правую часть, если title уже равен null.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "null, пустая строка и пробелы отклоняются.",
+        "kind": "ПОЧИНИ"
+      },
+      {
+        "title": "Убери пробелы по краям",
+        "brief": "Валидное название нужно нормализовать.",
+        "starter": "return title.{{trim}}();",
+        "slots": [
+          {
+            "id": "trim",
+            "label": "Удалить крайние пробелы",
+            "answers": [
+              "trim"
+            ],
+            "hint": "Стандартный метод String.",
+            "explain": "Нормализация здесь удаляет только крайние пробелы.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "«  Читать  » превращается в «Читать».",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Проверь отказ",
+        "brief": "Тест должен ожидать исключение от некорректного названия.",
+        "starter": "{{assert}}(IllegalArgumentException.class,\n    () -> service.create(\" \"));",
+        "slots": [
+          {
+            "id": "assert",
+            "label": "JUnit-проверка",
+            "answers": [
+              "assertThrows"
+            ],
+            "hint": "Начинается с assert, ожидает выброшенное исключение.",
+            "explain": "Тест фиксирует поведение на ошибочном входе.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "При отсутствии исключения тест упадёт.",
+        "kind": "ЗАЩИТИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Какой метод String проверяет, что строка пустая или состоит из пробелов? Введи имя без скобок.",
+        "starter": "if (title == null || title.{{final}}()) {\n    throw new IllegalArgumentException(\"Название пустое\");\n}",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "isBlank"
+            ],
+            "hint": "isEmpty проверяет только длину; нужен метод, учитывающий пробелы.",
+            "explain": "isBlank вернёт true для \"\", \" \" и строки с табуляцией. До вызова проверь null.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Ты собрал итоговый фрагмент сегодняшней темы.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Админка: страницы и формы",
@@ -940,7 +2120,90 @@
       "question": "Почему Android и админка должны иметь один сервис, хотя их контроллеры разные?",
       "answer": "Контроллеры обслуживают разные способы общения. Общий сервис обеспечивает одинаковые правила изменения одних и тех же данных."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Сопоставь имя поля",
+        "brief": "Контроллер принимает параметр title. Поле формы должно отправить такое же имя.",
+        "starter": "<input name=\"{{field}}\" required maxlength=\"80\">",
+        "slots": [
+          {
+            "id": "field",
+            "label": "Имя поля",
+            "answers": [
+              "title"
+            ],
+            "hint": "Имя берётся из параметра контроллера.",
+            "explain": "name определяет ключ отправляемого значения, а не видимый текст.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Введённое название попадёт в title.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Подставь список",
+        "brief": "Шаблон повторяет строку для каждой привычки из модели.",
+        "starter": "<li th:each=\"habit : ${ {{list}} }\" th:text=\"${habit.title}\"></li>",
+        "slots": [
+          {
+            "id": "list",
+            "label": "Имя списка в модели",
+            "answers": [
+              "habits"
+            ],
+            "hint": "model.addAttribute(\"habits\", ...).",
+            "explain": "Переменная habit существует внутри текущей итерации.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Каждая привычка получает отдельную строку.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Сохрани ограничение длины",
+        "brief": "На клиенте ограничь название до 80 символов. Сервер всё равно должен валидировать его.",
+        "starter": "<input name=\"title\" maxlength=\"{{limit}}\">",
+        "slots": [
+          {
+            "id": "limit",
+            "label": "Максимальная длина",
+            "answers": [
+              "80"
+            ],
+            "hint": "Граница из контракта: 80 символов.",
+            "explain": "Клиентская проверка удобна, но не заменяет серверную.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Форма подсказывает ограничение до отправки.",
+        "kind": "ЗАЩИТИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Какой HTTP-метод должна использовать форма создания привычки?",
+        "starter": "<form action=\"/admin/habits\" method=\"{{final}}\">\n    <input name=\"title\">\n</form>",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "POST"
+            ],
+            "hint": "Создание меняет данные и не должно выполняться через чтение.",
+            "explain": "POST отправляет новую команду. После сохранения контроллер возвращает redirect на GET страницы.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Ты собрал итоговый фрагмент сегодняшней темы.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Java-проект: слои и сборка",
@@ -1016,7 +2279,91 @@
       "question": "Что должен сделать update, если id отсутствует в нашей системе?",
       "answer": "Вернуть понятную ошибку отсутствующего ресурса. Создание является отдельной операцией."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Отсутствие значения — явно",
+        "brief": "Метод хранилища может ничего не найти. Допиши контейнер результата.",
+        "starter": "{{optional}}<Habit> findById(long id);",
+        "slots": [
+          {
+            "id": "optional",
+            "label": "Тип возможного результата",
+            "answers": [
+              "Optional",
+              "java.util.Optional"
+            ],
+            "hint": "Это Java-контейнер с наличием или отсутствием значения.",
+            "explain": "Optional заставляет вызывающий код выбрать поведение, когда объекта нет.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Отсутствующая привычка описана контрактом.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Не создавай хранилище внутри метода",
+        "brief": "Передай store через конструктор и сохрани поле.",
+        "starter": "public HabitService(HabitStore store) {\n    {{assign}}\n}",
+        "slots": [
+          {
+            "id": "assign",
+            "label": "Присваивание",
+            "answers": [
+              "this.store = store;"
+            ],
+            "hint": "this.store — поле; store — параметр.",
+            "explain": "Одна переданная зависимость используется сервисом.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "В тесте можно передать учебное хранилище.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Передай запрос вниз",
+        "brief": "Сервис должен искать по полученному id, а не по константе 1.",
+        "starter": "return store.findById({{id}})\n    .orElseThrow(() -> new IllegalArgumentException(\"Не найдено\"));",
+        "slots": [
+          {
+            "id": "id",
+            "label": "Аргумент поиска",
+            "answers": [
+              "id"
+            ],
+            "hint": "Используй параметр метода.",
+            "explain": "Жёстко заданный id вернул бы чужую привычку.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Поиск относится к выбранному пользователем объекту.",
+        "kind": "ПОЧИНИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Допиши имя метода Optional, который возвращает значение или выбрасывает исключение от supplier.",
+        "starter": "return store.findById(id)\n    .{{final}}(() -> new IllegalArgumentException(\"Не найдено\"));",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "orElseThrow"
+            ],
+            "hint": "Название начинается с orElse и говорит о выбрасывании ошибки.",
+            "explain": "orElseThrow задаёт поведение для отсутствующего значения и избавляет от неявного null.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Ты собрал итоговый фрагмент сегодняшней темы.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Java-босс: законченная админка",
@@ -1097,7 +2444,93 @@
       "question": "Почему входной HabitRequest может не содержать id, а HabitResponse должен его содержать?",
       "answer": "При создании id назначает сервер. Ответ сообщает фактический id, необходимый для следующих операций."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Сохрани id в ответе",
+        "brief": "Клиенту нужен устойчивый идентификатор созданного объекта. Допиши его тип.",
+        "starter": "public record HabitResponse({{type}} id, String title, boolean done) {}",
+        "slots": [
+          {
+            "id": "type",
+            "label": "Тип id",
+            "answers": [
+              "long"
+            ],
+            "hint": "Примитив Java для 64-битного целого.",
+            "explain": "Ответ содержит id; запрос создания ещё не обязан его иметь.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Клиент сможет обновить именно этот объект.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Удаление по id",
+        "brief": "Админка должна передать id выбранной привычки сервису.",
+        "starter": "public void delete(long id) {\n    service.delete({{id}});\n}",
+        "slots": [
+          {
+            "id": "id",
+            "label": "Аргумент удаления",
+            "answers": [
+              "id"
+            ],
+            "hint": "Не индекс строки и не название.",
+            "explain": "Идентичность объекта сохраняется при сортировке списка.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Удаляется выбранный ресурс.",
+        "kind": "СОЕДИНИ"
+      },
+      {
+        "title": "Не дублируй бизнес-логику",
+        "brief": "Веб-контроллер и API-контроллер используют один слой. Допиши зависимость.",
+        "starter": "private final {{service}} service;",
+        "slots": [
+          {
+            "id": "service",
+            "label": "Общий бизнес-сервис",
+            "answers": [
+              "HabitService"
+            ],
+            "hint": "Название сервиса из проекта.",
+            "explain": "Общие правила в одном месте применяются к обоим интерфейсам.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Админка и Android используют одинаковые правила.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Кто должен генерировать устойчивый id новой привычки в нашей архитектуре?",
+        "starter": "// Кто создаёт id, который затем получает Android?\n// Ответ: {{final}}",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "сервер",
+              "server",
+              "backend",
+              "бэкенд"
+            ],
+            "hint": "Все клиенты должны видеть один и тот же идентификатор.",
+            "explain": "Сервер централизованно хранит данные и выдаёт id. Клиенты передают id для дальнейших операций.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Ты собрал итоговый фрагмент сегодняшней темы.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Spring Boot: первый сервер",
@@ -1176,7 +2609,90 @@
       "question": "Как Spring понимает, что передать в конструктор HabitService?",
       "answer": "Он ищет зарегистрированный bean подходящего типа. Если его нет или кандидатов несколько без уточнения, запуск сообщит об ошибке связывания."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Передай repository сервису",
+        "brief": "Конструктор уже принимает зависимость. Допиши присваивание.",
+        "starter": "public HabitService(HabitRepository repository) {\n    {{assign}}\n}",
+        "slots": [
+          {
+            "id": "assign",
+            "label": "Сохранение зависимости",
+            "answers": [
+              "this.repository = repository;"
+            ],
+            "hint": "Слева поле this.repository, справа параметр.",
+            "explain": "Spring создаёт сервис и передаёт доступную зависимость в конструктор.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Сервис получает repository.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Запусти приложение",
+        "brief": "В main нужно передать класс конфигурации и аргументы запуска.",
+        "starter": "SpringApplication.run({{app}}, args);",
+        "slots": [
+          {
+            "id": "app",
+            "label": "Класс приложения",
+            "answers": [
+              "HabitsApplication.class"
+            ],
+            "hint": "Java-ссылка на класс заканчивается .class.",
+            "explain": "run использует этот класс как источник конфигурации приложения.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Запускается контекст Spring Boot.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Зарегистрируй приложение",
+        "brief": "Допиши аннотацию на главный класс.",
+        "starter": "@{{boot}}\npublic class HabitsApplication {\n    // main уже написан\n}",
+        "slots": [
+          {
+            "id": "boot",
+            "label": "Аннотация приложения",
+            "answers": [
+              "SpringBootApplication"
+            ],
+            "hint": "Составная аннотация Spring Boot.",
+            "explain": "Она включает настройку приложения и сканирование компонентов.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Компоненты из нужных пакетов находятся при запуске.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Вставь полную аннотацию перед классом бизнес-сервиса.",
+        "starter": "{{final}}\npublic class HabitService {\n    // бизнес-логика\n}",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "@Service"
+            ],
+            "hint": "Название соответствует роли сервисного слоя.",
+            "explain": "@Service — специализация компонента. Spring обнаруживает его в сканируемом пакете.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Ты собрал итоговый фрагмент сегодняшней темы.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "REST: контракт и контроллеры",
@@ -1254,7 +2770,90 @@
       "question": "Почему Retrofit может падать при разборе ответа, хотя сервер вернул 204?",
       "answer": "204 не содержит тело. Клиент должен ожидать завершение без DTO, а не пытаться прочитать JSON-объект."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Верни JSON",
+        "brief": "Контроллер должен возвращать объекты как тело ответа.",
+        "starter": "@{{controller}}\n@RequestMapping(\"/api/habits\")\npublic class HabitController {}",
+        "slots": [
+          {
+            "id": "controller",
+            "label": "Аннотация REST-контроллера",
+            "answers": [
+              "RestController"
+            ],
+            "hint": "Обычный @Controller часто возвращает имя шаблона.",
+            "explain": "@RestController включает поведение @ResponseBody для методов.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Объекты ответа сериализуются в JSON.",
+        "kind": "ПОЧИНИ"
+      },
+      {
+        "title": "Статус создания",
+        "brief": "После создания ресурса верни CREATED.",
+        "starter": "@PostMapping\n@ResponseStatus(HttpStatus.{{status}})\npublic HabitResponse create(@RequestBody HabitRequest request) {\n    return service.create(request);\n}",
+        "slots": [
+          {
+            "id": "status",
+            "label": "HTTP-статус",
+            "answers": [
+              "CREATED"
+            ],
+            "hint": "Символическое имя статуса 201.",
+            "explain": "201 сообщает, что создан новый ресурс.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Клиент различает создание и обычное чтение.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Включи валидацию запроса",
+        "brief": "На параметре тела включи проверку ограничений HabitRequest.",
+        "starter": "public HabitResponse create(@{{valid}} @RequestBody HabitRequest request) {\n    return service.create(request);\n}",
+        "slots": [
+          {
+            "id": "valid",
+            "label": "Аннотация валидации",
+            "answers": [
+              "Valid"
+            ],
+            "hint": "Аннотация из Jakarta Validation.",
+            "explain": "@RequestBody читает JSON, @Valid запускает ограничения DTO.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Некорректные входные данные не проходят в сервис.",
+        "kind": "ЗАЩИТИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Напиши аннотацию для DELETE по адресу /{id} внутри контроллера.",
+        "starter": "{{final}}\nvoid delete(@PathVariable long id) { service.delete(id); }",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "@DeleteMapping(\"/{id}\")"
+            ],
+            "hint": "Используй DeleteMapping с шаблоном пути.",
+            "explain": "Аннотация выбирает метод HTTP и маршрут. Сам id затем принимается через @PathVariable.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Ты собрал итоговый фрагмент сегодняшней темы.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "JPA: база и репозиторий",
@@ -1332,7 +2931,90 @@
       "question": "Почему после перезапуска могли исчезнуть все привычки, хотя save работал?",
       "answer": "Вероятно, использовалась in-memory база или менялся путь файловой базы. save сохраняет в выбранное хранилище, но не делает его автоматически постоянным."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Обозначь первичный ключ",
+        "brief": "У сущности уже есть поле Long id. Допиши аннотацию ключа.",
+        "starter": "@{{id}}\n@GeneratedValue(strategy = GenerationType.IDENTITY)\nprivate Long id;",
+        "slots": [
+          {
+            "id": "id",
+            "label": "Аннотация ключа",
+            "answers": [
+              "Id"
+            ],
+            "hint": "Короткое имя идентификатора.",
+            "explain": "JPA требует обозначить первичный ключ сущности.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "id становится идентификатором записи.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Не генерируй id на клиенте",
+        "brief": "База должна создавать id. Допиши стратегию.",
+        "starter": "@GeneratedValue(strategy = GenerationType.{{strategy}})\nprivate Long id;",
+        "slots": [
+          {
+            "id": "strategy",
+            "label": "Стратегия генерации",
+            "answers": [
+              "IDENTITY"
+            ],
+            "hint": "В примере используется identity-столбец базы.",
+            "explain": "Для этой стратегии id появляется при вставке записи.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Новый ресурс получает серверный id.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Найди запись",
+        "brief": "Repository уже создан. Передай id стандартному методу поиска.",
+        "starter": "var habit = repository.{{find}}(id);",
+        "slots": [
+          {
+            "id": "find",
+            "label": "Метод Spring Data",
+            "answers": [
+              "findById"
+            ],
+            "hint": "Поиск по первичному ключу возвращает Optional.",
+            "explain": "Spring Data предоставляет реализацию этого метода.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Поиск не требует ручного SQL в контроллере.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Напиши объявление интерфейса HabitRepository для HabitEntity с ключом Long.",
+        "starter": "// Добавь контракт Spring Data:\n{{final}}",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "public interface HabitRepository extends JpaRepository<HabitEntity, Long> {}"
+            ],
+            "hint": "Интерфейс extends JpaRepository с двумя типами.",
+            "explain": "Spring Data создаёт реализацию во время запуска. Типы описывают сущность и ключ.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Ты собрал итоговый фрагмент сегодняшней темы.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Валидация и ошибки API",
@@ -1411,7 +3093,90 @@
       "question": "Почему после сетевого таймаута опасно автоматически повторять POST создания?",
       "answer": "Сервер мог уже сохранить запись, но клиент не получил ответ. Повтор создаст дубликат без отдельного механизма идемпотентности."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Ограничь название",
+        "brief": "Допиши максимальную длину из контракта.",
+        "starter": "public record HabitRequest(\n    @NotBlank @Size(max = {{limit}}) String title,\n    boolean done\n) {}",
+        "slots": [
+          {
+            "id": "limit",
+            "label": "Максимум символов",
+            "answers": [
+              "80"
+            ],
+            "hint": "Контракт курса использует 80.",
+            "explain": "Длина проверяется на сервере, даже если HTML можно обойти.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "81 символ будет отклонён.",
+        "kind": "ЗАЩИТИ"
+      },
+      {
+        "title": "Объект не найден",
+        "brief": "При отсутствии привычки верни статус Not Found.",
+        "starter": "return ResponseEntity.status({{status}})\n    .body(Map.of(\"code\", \"NOT_FOUND\"));",
+        "slots": [
+          {
+            "id": "status",
+            "label": "HTTP-код",
+            "answers": [
+              "404"
+            ],
+            "hint": "Не ошибка 500 и не успешный 200.",
+            "explain": "404 сообщает клиенту, что запрошенного ресурса нет.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Клиент может показать понятное сообщение.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Подключи обработчик исключения",
+        "brief": "Допиши аннотацию метода для конкретного исключения.",
+        "starter": "@{{handler}}(HabitNotFoundException.class)\nResponseEntity<?> missing() {\n    return ResponseEntity.notFound().build();\n}",
+        "slots": [
+          {
+            "id": "handler",
+            "label": "Аннотация обработчика",
+            "answers": [
+              "ExceptionHandler"
+            ],
+            "hint": "Начинается с Exception.",
+            "explain": "Advice централизует перевод исключений в HTTP-ответы.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Контроллеры не дублируют одинаковый catch.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Вставь полную аннотацию, запрещающую null, пустую строку и строку из пробелов.",
+        "starter": "{{final}}\nString title;",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "@NotBlank"
+            ],
+            "hint": "Аннотация содержит слово Blank.",
+            "explain": "@NotNull запрещает только null. @NotEmpty также запрещает пустую строку, но пробелы проверяет @NotBlank.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Ты собрал итоговый фрагмент сегодняшней темы.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Админка на Java + Thymeleaf",
@@ -1489,7 +3254,90 @@
       "question": "Почему нужно возвращать форму при ошибке, а redirect — после успешного сохранения?",
       "answer": "При ошибке важно сохранить введённые данные и сообщения. После успеха новый GET предотвращает повтор POST при обновлении страницы."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Передай список шаблону",
+        "brief": "Имя атрибута должно совпасть с habits в HTML.",
+        "starter": "model.addAttribute(\"{{attribute}}\", service.list());\nreturn \"habits\";",
+        "slots": [
+          {
+            "id": "attribute",
+            "label": "Имя атрибута",
+            "answers": [
+              "habits"
+            ],
+            "hint": "Шаблон обращается к ${habits}.",
+            "explain": "Модель связывает серверные данные с шаблоном.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "HTML получает список привычек.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Прочитай поле формы",
+        "brief": "HTML отправляет title. Допиши аннотацию параметра.",
+        "starter": "String create(@{{param}} String title) {\n    service.create(new HabitRequest(title, false));\n    return \"redirect:/admin/habits\";\n}",
+        "slots": [
+          {
+            "id": "param",
+            "label": "Аннотация параметра",
+            "answers": [
+              "RequestParam"
+            ],
+            "hint": "Форма отправляет параметр, а не JSON @RequestBody.",
+            "explain": "@RequestParam связывает поле формы с аргументом метода.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Введённый title попадает в запрос сервиса.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Новая привычка ещё не выполнена",
+        "brief": "При создании из формы укажи начальный флаг.",
+        "starter": "service.create(new HabitRequest(title, {{done}}));",
+        "slots": [
+          {
+            "id": "done",
+            "label": "Начальное значение",
+            "answers": [
+              "false"
+            ],
+            "hint": "Пользователь пока не отмечал выполнение.",
+            "explain": "Отделяем создание привычки от отметки выполнения.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "После создания done равен false.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Какую строку вернёт контроллер после создания, чтобы перенаправить на /admin/habits? Введи Java return.",
+        "starter": "String create(@RequestParam String title) {\n    service.create(new HabitRequest(title, false));\n    {{final}}\n}",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "return \"redirect:/admin/habits\";"
+            ],
+            "hint": "Перед адресом добавь redirect:.",
+            "explain": "Браузер делает новый GET после POST. Обновление страницы не отправит создание повторно.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Ты собрал итоговый фрагмент сегодняшней темы.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Безопасность и тесты интеграции",
@@ -1568,7 +3416,90 @@
       "question": "Почему авторизованный пользователь всё равно может получать 403?",
       "answer": "Он может не иметь нужной роли, либо защищённое действие не проходит другую проверку, например CSRF. Нужно диагностировать конкретное правило, а не отключать всю защиту."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Публичная проверка здоровья",
+        "brief": "Только health должен быть открыт без входа.",
+        "starter": "auth.requestMatchers(\"/api/health\").{{access}}();",
+        "slots": [
+          {
+            "id": "access",
+            "label": "Правило доступа",
+            "answers": [
+              "permitAll"
+            ],
+            "hint": "Разрешить всем для конкретного пути.",
+            "explain": "Открыт только этот маршрут, остальные правила задаются отдельно.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Мониторинг может проверить доступность сервера.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Закрой всё остальное",
+        "brief": "По умолчанию остальные маршруты требуют входа.",
+        "starter": "auth.anyRequest().{{auth}}();",
+        "slots": [
+          {
+            "id": "auth",
+            "label": "Требование входа",
+            "answers": [
+              "authenticated"
+            ],
+            "hint": "Не permitAll.",
+            "explain": "Явное правило по умолчанию уменьшает риск случайно открытого нового endpoint.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Незалогиненный запрос не получает приватные данные.",
+        "kind": "ЗАЩИТИ"
+      },
+      {
+        "title": "Проверь анонимного пользователя",
+        "brief": "Для нашего защищённого API тест ожидает 401 без авторизации.",
+        "starter": "mockMvc.perform(get(\"/api/habits\"))\n    .andExpect(status().{{status}}());",
+        "slots": [
+          {
+            "id": "status",
+            "label": "Ожидаемый статус",
+            "answers": [
+              "isUnauthorized"
+            ],
+            "hint": "Это 401; 403 означает другой сценарий отказа.",
+            "explain": "Такой тест предполагает выбранную API-стратегию с 401, а не редирект формы входа.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Тест фиксирует поведение API без сессии.",
+        "kind": "ПРОВЕРЬ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Допиши роль в hasRole: Spring сам добавляет префикс ROLE_. В этом месте нужен ADMIN без префикса.",
+        "starter": "http.authorizeHttpRequests(auth -> auth\n    .requestMatchers(\"/admin/**\").hasRole(\"{{final}}\")\n);",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "ADMIN"
+            ],
+            "hint": "Роль администратора. hasRole автоматически добавляет ROLE_.",
+            "explain": "Админка меняет общие данные, поэтому её доступ должен быть ограничен.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Ты собрал итоговый фрагмент сегодняшней темы.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   },
   {
     "title": "Финальный босс: один продукт",
@@ -1646,6 +3577,89 @@
       "question": "Какое небольшое изменение лучше всего покажет, что ты понимаешь связку целиком?",
       "answer": "Добавить поле во все слои, согласовать контракт, обработать неправильные значения и проверить обмен между обоими клиентами. Это требует понимания пути данных, а не копирования одного фрагмента."
     },
-    "readingMinutes": 35
+    "readingMinutes": 35,
+    "workshop": [
+      {
+        "title": "Android получает список",
+        "brief": "Выбери путь API для Android, а не путь HTML-админки.",
+        "starter": "@GET(\"{{path}}\")\nsuspend fun list(): List<HabitDto>",
+        "slots": [
+          {
+            "id": "path",
+            "label": "Путь чтения",
+            "answers": [
+              "api/habits"
+            ],
+            "hint": "В контракте JSON доступен по /api/habits.",
+            "explain": "Клиент должен получить JSON, не HTML шаблон админки.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Android и сервер согласованы по маршруту.",
+        "kind": "СОЕДИНИ"
+      },
+      {
+        "title": "Собери ответ без тела",
+        "brief": "После успешного удаления допиши статус контроллера.",
+        "starter": "@DeleteMapping(\"/{id}\")\n@ResponseStatus(HttpStatus.{{status}})\nvoid delete(@PathVariable long id) {\n    service.delete(id);\n}",
+        "slots": [
+          {
+            "id": "status",
+            "label": "Статус ответа",
+            "answers": [
+              "NO_CONTENT"
+            ],
+            "hint": "Символическое имя 204.",
+            "explain": "void не гарантирует автоматически именно 204; задаём статус явно.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "DELETE отвечает без тела с кодом 204.",
+        "kind": "ДОПИШИ"
+      },
+      {
+        "title": "Исправь адрес сервера в эмуляторе",
+        "brief": "Стандартный Android-эмулятор обращается к хосту по специальному адресу.",
+        "starter": "val baseUrl = \"http://{{host}}:8080/\"",
+        "slots": [
+          {
+            "id": "host",
+            "label": "Адрес хоста",
+            "answers": [
+              "10.0.2.2"
+            ],
+            "hint": "Это адрес хост-компьютера в стандартном Android Emulator.",
+            "explain": "localhost внутри эмулятора относится к самому эмулятору. Это debug-конфигурация.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Клиент знает, где находится локальный сервер.",
+        "kind": "ПОЧИНИ"
+      },
+      {
+        "title": "Собери итоговый фрагмент",
+        "brief": "Введи HTTP-код успешного удаления без тела ответа.",
+        "starter": "// Проверка HTTP-контракта после удаления:\nassertEquals({{final}}, response.statusCode());",
+        "slots": [
+          {
+            "id": "final",
+            "label": "Итоговая строка или функция",
+            "answers": [
+              "204"
+            ],
+            "hint": "Код из семейства 2xx: No Content.",
+            "explain": "204 сообщает об успехе без тела. Клиент не должен пытаться десериализовать JSON из пустого ответа.",
+            "kind": "token",
+            "tests": []
+          }
+        ],
+        "result": "Ты собрал итоговый фрагмент сегодняшней темы.",
+        "kind": "БОСС"
+      }
+    ],
+    "taskMode": "workshop-v2"
   }
 ]

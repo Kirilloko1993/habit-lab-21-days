@@ -90,7 +90,7 @@ onAuthStateChanged(auth,account=>{
       const changed=JSON.stringify(remote)!==JSON.stringify(state);
       state=validateState(remote);baseline=copy(state);cache();ready=true;
       // Снимки не сбрасывают фокус и текст редактора во время ввода.
-      if(changed&&document.activeElement?.id!=='answer')refresh();else {updateProfile();renderStatus();}
+      if(changed&&!document.activeElement?.matches('#answer, [data-workshop-editor]'))refresh();else {updateProfile();renderStatus();}
       status(queue.length?'Синхронизируется…':'Сохранено в аккаунте');flush();
     }catch{status('Не удалось прочитать облачный прогресс. Экспортируй локальную копию.');}
   },()=>{status('Облачное хранилище недоступно. Локальный прогресс сохранён.');});
