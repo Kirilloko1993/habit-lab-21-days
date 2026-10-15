@@ -4,7 +4,7 @@ function workshopDraft(i){return WorkshopEngine.readDraft(state.drafts[i]);}
 function writeWorkshopDraft(i,draft){state.drafts[i]=WorkshopEngine.writeDraft(draft);save();}
 function legacyAnswer(i){return workshopDraft(i).code;}
 function saveLegacyAnswer(i,value){const draft=workshopDraft(i);draft.code=value;writeWorkshopDraft(i,draft);}
-function workshopPassed(step,record){return !!record?.passed&&WorkshopEngine.checkStep(step,record.answers||{}).ok;}
+function workshopPassed(step,record){const accepted=record?.accepted||(record?.passed?record.answers:null);return !!accepted&&WorkshopEngine.checkStep(step,accepted).ok;}
 function workshopCount(i){return course[i].workshop.filter((s,n)=>workshopPassed(s,workshopDraft(i).labs[n])).length;}
 function workshopExample(step,values){return step.starter.replace(/\{\{(\w+)\}\}/g,(_,id)=>values[id]?.trim()||'______');}
 function workshopSource(step){

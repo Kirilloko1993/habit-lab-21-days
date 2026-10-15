@@ -2,13 +2,13 @@ import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-
 import {getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,sendPasswordResetEmail} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js';
 import {getFirestore,doc,onSnapshot,runTransaction,serverTimestamp} from 'https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js';
 import {firebaseConfig} from './firebase-config.js';
-import {emptyProgress,diffProgress,applyPatch,mergePatches} from './progress-merge.mjs';
+import {emptyProgress,diffProgress,applyPatch,mergePatches,mergeProgressCopies} from './progress-merge.mjs?v=persistence-v2';
 const auth=getAuth(initializeApp(firebaseConfig)),db=getFirestore();
-let user=null,unsubscribe=null,epoch=0,queue=[],baseline=emptyProgress(),timer=null,writing=false,ready=false;
+let user=null,unsubscribe=null,epoch=0,queue=[],baseline=emptyProgress(),timer=null,writing=false,ready=false,explicitLogout=false;
 const copy=x=>structuredClone(x), status=text=>{document.querySelector('#syncStatus').textContent=text;};
 function storeQueue(){try{if(user)localStorage.setItem('habitlab-outbox-'+user.uid,JSON.stringify(queue));}catch{status('Локальное сохранение недоступно. Не закрывай страницу до синхронизации.');}}
 function refresh(){if(course.length){week=Math.floor(state.last/7);day=state.last%7;render();}updateProfile();}
-function cache(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch{storageOK=false;}}
+function cache(){try{backupLocalProgress(KEY,localStorage.getItem(KEY));localStorage.setItem(KEY,JSON.stringify(state));}catch{storageOK=false;}}
 window.onProgressSaved=()=>{
   if(!user)return;
   const patch=diffProgress(baseline,state);baseline=copy(state);
@@ -27,6 +27,7 @@ async function flush(){
       tx.set(ref,{version:1,progress:next,updatedAt:serverTimestamp()});return next;
     });
     if(version!==epoch)return;
+    try{localStorage.setItem('habitlab-confirmed-'+account.uid,JSON.stringify(result));}catch{}
     queue.splice(0,count);storeQueue();
     let merged=result;for(const patch of queue)merged=applyPatch(merged,patch);
     merged.last=state.last;
@@ -61,7 +62,7 @@ function showAuth(){
   form.onsubmit=e=>{e.preventDefault();action('login');};document.querySelector('#registerAccount').onclick=()=>action('register');document.querySelector('#resetAccount').onclick=()=>action('reset');
 }
 document.querySelector('#accountButton').onclick=showAuth;
-document.querySelector('#logoutButton').onclick=async()=>{try{await signOut(auth);}catch{status('Не удалось выйти. Повтори попытку.');}};
+document.querySelector('#logoutButton').onclick=async()=>{try{explicitLogout=true;await signOut(auth);if(!auth.currentUser)handleAuthState(null);}catch{explicitLogout=false;status('Не удалось выйти. Повтори попытку.');}};
 document.querySelector('#migrateGuest').onclick=()=>{
   if(!user||!ready)return;
   try{
@@ -71,20 +72,29 @@ document.querySelector('#migrateGuest').onclick=()=>{
     status('Переношу гостевой прогресс…');
   }catch{status('Не удалось прочитать гостевой прогресс.');}
 };
-onAuthStateChanged(auth,account=>{
+function handleAuthState(account){
   epoch++;if(typeof compilerSession!=='undefined')compilerSession++;unsubscribe?.();unsubscribe=null;clearTimeout(timer);writing=false;ready=false;user=account;queue=[];
-  KEY=account?'habitlab-user-'+account.uid:'habitlab-v1';
-  try{state=validateState(JSON.parse(localStorage.getItem(KEY)||JSON.stringify(emptyProgress())));}catch{state=emptyProgress();}
+  const oldKey=KEY;backupLocalProgress(oldKey,JSON.stringify(state));
+  const target=account?'habitlab-user-'+account.uid:(!explicitLogout&&oldKey.startsWith('habitlab-user-')?oldKey:'habitlab-v1');
+  KEY=target;
+  if(target!==oldKey){try{state=validateState(JSON.parse(localStorage.getItem(KEY)||JSON.stringify(emptyProgress())));}catch{state=emptyProgress();}}
+  try{const recovery=localStorage.getItem(KEY+':recovery');if(recovery)state=validateState(mergeProgressCopies(validateState(JSON.parse(recovery)),state));}catch{}
+  try{localStorage.setItem('habitlab-active-profile',KEY);localStorage.setItem(KEY,JSON.stringify(state));}catch{}
+  explicitLogout=false;
   baseline=copy(state);refresh();
   document.querySelector('#accountButton').hidden=!!account;document.querySelector('#logoutButton').hidden=!account;document.querySelector('#migrateGuest').hidden=!account;
   document.querySelector('#accountName').textContent=account?account.email:'';
-  if(!account){status('Гостевой режим · прогресс в этом браузере');return;}
+  if(!account){status(KEY.startsWith('habitlab-user-')?'Открыта локальная копия аккаунта. Войди снова, чтобы отправить её в облако.':'Гостевой режим · прогресс в этом браузере');return;}
   try{const outbox=JSON.parse(localStorage.getItem('habitlab-outbox-'+account.uid)||'[]');if(Array.isArray(outbox))queue=outbox;}catch{}
+  // Reconstruct unsent edits from the durable local copy even if the page closed before Auth loaded.
+  try{const confirmed=validateState(JSON.parse(localStorage.getItem('habitlab-confirmed-'+account.uid)||JSON.stringify(emptyProgress())));queue.push(diffProgress(confirmed,state));storeQueue();}catch{}
   status('Загружаю прогресс аккаунта…');const version=epoch;
   unsubscribe=onSnapshot(doc(db,'progress',account.uid),snapshot=>{
     if(version!==epoch||snapshot.metadata.hasPendingWrites)return;
     try{
-      let remote=snapshot.exists()?validateState(snapshot.data().progress):emptyProgress();
+      let server=snapshot.exists()?validateState(snapshot.data().progress):emptyProgress();
+      try{localStorage.setItem('habitlab-confirmed-'+account.uid,JSON.stringify(server));}catch{}
+      let remote=validateState(mergeProgressCopies(state,server));
       for(const patch of queue)remote=applyPatch(remote,patch);
       if(ready)remote.last=state.last;
       const changed=JSON.stringify(remote)!==JSON.stringify(state);
@@ -94,4 +104,6 @@ onAuthStateChanged(auth,account=>{
       status(queue.length?'Синхронизируется…':'Сохранено в аккаунте');flush();
     }catch{status('Не удалось прочитать облачный прогресс. Экспортируй локальную копию.');}
   },()=>{status('Облачное хранилище недоступно. Локальный прогресс сохранён.');});
-},()=>status('Не удалось загрузить вход. Обнови страницу.'));
+}
+onAuthStateChanged(auth,handleAuthState,()=>status('Не удалось проверить вход. Локальные данные сохранены; попробуй войти снова.'));
+window.addEventListener('pagehide',()=>{cache();storeQueue();});
