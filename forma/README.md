@@ -22,3 +22,9 @@
 - Сканер ZXing поставляется локально, запускает камеру только по кнопке и не отправляет видео на сервер. Фактическая работа камеры зависит от разрешений и браузера.
 
 Данные Open Food Facts: https://world.openfoodfacts.org/data (ODbL). Доступность и полнота внешней базы могут меняться. FatSecret и YAZIO не подключены.
+
+## iPhone / Huawei steps bridge
+
+The frontend accepts a daily step total from an iPhone Shortcut, after local opt-in and explicit review. Setup lives on Today and Profile. No Huawei OAuth or direct Apple Health access is claimed. The user must create the Shortcut on their phone, filter Health samples to Huawei only, and verify the first total. No ready-made or signed Shortcut is included. Real iPhone execution remains to be verified.
+
+Fragment format: `#health-steps?date=YYYY-MM-DD&steps=8123&key=LOCAL_KEY`. The fragment is removed before confirmation and is never included in HTTP requests. Values are date/integer/range checked, and only the local browser key is accepted. A confirmed transfer replaces that day's total; it does not add to it. Repeating a transfer is idempotent. The local connection key is not an account credential and is excluded from diary backup. Reconnect after clearing storage or changing browser. Steps remain local, like the rest of the diary. No background or ordinary-Safari-open auto sync.

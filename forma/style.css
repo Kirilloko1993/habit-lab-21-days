@@ -10,3 +10,5 @@ dialog.product-dialog{overflow:hidden;max-height:90dvh;padding-bottom:0}dialog.p
 
 /* Long imported names and Safari form controls must stay inside their cards. */
 .grid>*,.flex>*,.setting-grid>*,.nutrition-inputs>*{min-width:0}.product-pick,.entry-edit,.meal-copy,.ingredient span,.habit-row strong,.guide .details-body{overflow-wrap:anywhere}.product-dialog .dialog-head h2{font-size:clamp(19px,5vw,23px)}.product-dialog .dialog-head .icon-btn{flex-shrink:0}input,select,textarea{max-width:100%}@media(max-width:800px){input,select,textarea{font-size:16px!important}dialog{width:calc(100% - 20px);max-height:90dvh;padding:20px}.product-save-bar{padding-top:12px}.product-save-bar .btn{font-size:13px;padding:12px 8px}.nutri-label{flex-wrap:wrap}.nutri-label h3{flex-basis:160px}.database-note a{overflow-wrap:anywhere}.card h3{overflow-wrap:anywhere}#mobile-nav{padding-bottom:max(8px,env(safe-area-inset-bottom))}}
+
+.bridge-instructions{padding-left:23px;font-size:13px;line-height:1.75;margin:18px 0}.bridge-instructions li{margin:13px 0}#step-template{font-size:12px!important;overflow-wrap:anywhere;width:100%;background:#f5f7f0}
