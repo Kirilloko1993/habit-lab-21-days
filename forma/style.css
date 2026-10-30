@@ -14,3 +14,5 @@ dialog.product-dialog{overflow:hidden;max-height:90dvh;padding-bottom:0}dialog.p
 .bridge-instructions{padding-left:23px;font-size:13px;line-height:1.75;margin:18px 0}.bridge-instructions li{margin:13px 0}#step-template{font-size:12px!important;overflow-wrap:anywhere;width:100%;background:#f5f7f0}
 
 .step-refresh{margin:14px 0 18px}.step-refresh .btn{width:100%;min-height:46px}.step-refresh .field-note{margin:7px 0 0}
+
+.storage-warning{position:fixed;top:0;left:0;right:0;z-index:100;background:#8b3629;color:white;padding:12px 18px;font-size:13px;box-shadow:0 3px 15px #0003}.storage-warning button{padding:7px 10px;border:1px solid #ffffff77;border-radius:6px;background:transparent;color:white;margin:4px}.storage-report{background:#f2f5ed;padding:15px;border-radius:12px;margin:15px 0;font-size:13px;line-height:1.7}.storage-report p+p{margin-top:8px}@media(max-width:800px){.header-right .save-status{display:block!important;font-size:10px;max-width:110px;line-height:1.3}}
